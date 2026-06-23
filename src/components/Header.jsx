@@ -4,9 +4,12 @@ export default function Header({ currentView, setCurrentView }) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <div className="flex items-center gap-3">
+        <div
+          onClick={() => setCurrentView('home')}
+          className="flex items-center gap-3 cursor-pointer select-none group"
+        >
           {/* Logo Icon */}
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-200 dark:shadow-none">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-200 dark:shadow-none transition-all group-hover:scale-105">
             <svg
               className="h-5 w-5"
               fill="none"
@@ -22,7 +25,7 @@ export default function Header({ currentView, setCurrentView }) {
               />
             </svg>
           </div>
-          <span className="font-display text-xl font-bold tracking-tight text-slate-800 dark:text-white">
+          <span className="font-display text-xl font-bold tracking-tight text-slate-800 dark:text-white group-hover:text-indigo-600 transition-colors">
             Especificação Técnica Alesp
           </span>
         </div>
@@ -37,7 +40,7 @@ export default function Header({ currentView, setCurrentView }) {
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            Adicionar/Editar
+            Editar Especificação
           </button>
           <button
             onClick={() => setCurrentView('view')}
@@ -47,7 +50,7 @@ export default function Header({ currentView, setCurrentView }) {
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            Visualizar
+            Visualizar Especificação
           </button>
         </div>
         

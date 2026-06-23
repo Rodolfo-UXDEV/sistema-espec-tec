@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 
 export default function ComponentViewModal({ isOpen, onClose, component }) {
-  const [activeTab, setActiveTab] = useState('general');
+  const [expandedSections, setExpandedSections] = useState({
+    general: false,
+    fields: false,
+    services: false,
+  });
+
+  const toggleSection = (section) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   if (!isOpen || !component) return null;
 
@@ -88,174 +99,199 @@ export default function ComponentViewModal({ isOpen, onClose, component }) {
               {component.name}
             </h4>
           </div>
-
-
-          {/* Navigation tabs */}
-          <div className="border-b border-slate-100 dark:border-slate-800">
-            <nav className="flex space-x-6">
+          {/* Accordion Panels */}
+          <div className="space-y-4">
+            {/* Panel 1: Geral / Descrição */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/20 overflow-hidden shadow-sm">
               <button
-                onClick={() => setActiveTab('general')}
-                className={`border-b-2 px-1 pb-3 text-sm font-bold transition-all duration-200 ${
-                  activeTab === 'general'
-                    ? 'border-indigo-600 text-indigo-650 dark:border-indigo-500 dark:text-indigo-400'
-                    : 'border-transparent text-slate-500 hover:border-slate-200 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                }`}
+                type="button"
+                onClick={() => toggleSection('general')}
+                className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 px-5 py-3.5 text-left font-display text-sm font-bold text-slate-800 dark:text-white hover:bg-slate-105 dark:hover:bg-slate-800/60 transition-colors"
               >
-                Geral
-              </button>
-              <button
-                onClick={() => setActiveTab('fields')}
-                className={`border-b-2 px-1 pb-3 text-sm font-bold transition-all duration-200 ${
-                  activeTab === 'fields'
-                    ? 'border-indigo-600 text-indigo-650 dark:border-indigo-500 dark:text-indigo-400'
-                    : 'border-transparent text-slate-500 hover:border-slate-200 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                }`}
-              >
-                Campos e Validações
-              </button>
-              <button
-                onClick={() => setActiveTab('services')}
-                className={`border-b-2 px-1 pb-3 text-sm font-bold transition-all duration-200 ${
-                  activeTab === 'services'
-                    ? 'border-indigo-600 text-indigo-650 dark:border-indigo-500 dark:text-indigo-400'
-                    : 'border-transparent text-slate-500 hover:border-slate-200 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                }`}
-              >
-                Serviços de Integração
-              </button>
-            </nav>
-          </div>
-
-          {/* Tab content wrapper */}
-          <div className="pt-2">
-            {activeTab === 'general' && (
-              <div className="space-y-3">
-                <h5 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Descrição do Componente
-                </h5>
-                <div className="rounded-xl border border-slate-100 bg-slate-50/30 p-5 dark:border-slate-800 dark:bg-slate-900/40">
-                  <p className="text-sm text-slate-650 dark:text-slate-350 leading-relaxed whitespace-pre-line">
-                    {component.description || (
-                      <span className="italic text-slate-400">
-                        Nenhuma descrição fornecida para este componente.
-                      </span>
-                    )}
-                  </p>
+                <div className="flex items-center gap-2.5">
+                  <span className="h-5 w-1 rounded-full bg-indigo-600 dark:bg-indigo-500"></span>
+                  <span>Geral / Descrição</span>
                 </div>
-              </div>
-            )}
-
-            {activeTab === 'fields' && (
-              <div className="space-y-3">
-                <h5 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Campos e Validações Cadastrados
-                </h5>
-                {!component.fields || component.fields.length === 0 ? (
-                  <p className="text-sm text-slate-450 italic">
-                    Nenhum campo cadastrado neste componente.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-                    <table className="w-full min-w-[800px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
-                      <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                        <tr>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Nome do Campo</th>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[30%]">Descrição</th>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[10%] text-center">Obrigatório</th>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Formato</th>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[25%]">Regras de Validação</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                        {component.fields.map((field) => (
-                          <tr key={field.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
-                            <td className="px-4 py-2.5 font-mono font-semibold text-indigo-650 dark:text-indigo-400">
-                              {field.fieldName || '-'}
-                            </td>
-                            <td className="px-4 py-2.5 text-slate-650 dark:text-slate-300">
-                              {field.description || '-'}
-                            </td>
-                            <td className="px-4 py-2.5 text-center">
-                              {field.required ? (
-                                <span className="inline-flex rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
-                                  Sim
-                                </span>
-                              ) : (
-                                <span className="inline-flex rounded-full bg-slate-150/70 px-2.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                                  Não
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-2.5">
-                              <span className="inline-flex rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-750 dark:bg-indigo-950/30 dark:text-indigo-400">
-                                {field.format}
-                              </span>
-                            </td>
-                            <td className="px-4 py-2.5 text-slate-650 dark:text-slate-350">
-                              {field.validationRules || '-'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                <svg
+                  className={`h-4.5 w-4.5 text-slate-400 transition-transform duration-200 ${expandedSections.general ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {expandedSections.general && (
+                <div className="p-5 border-t border-slate-150 dark:border-slate-800/60 bg-white dark:bg-slate-900/10 space-y-3 animate-fade-in">
+                  <h5 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Descrição do Componente
+                  </h5>
+                  <div className="rounded-xl border border-slate-100 bg-slate-50/30 p-5 dark:border-slate-800 dark:bg-slate-900/40">
+                    <p className="text-sm text-slate-650 dark:text-slate-350 leading-relaxed whitespace-pre-line">
+                      {component.description || (
+                        <span className="italic text-slate-400">
+                          Nenhuma descrição fornecida para este componente.
+                        </span>
+                      )}
+                    </p>
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
 
-            {activeTab === 'services' && (
-              <div className="space-y-3">
-                <h5 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Serviços e Integrações Mapeados
-                </h5>
-                {!component.services || component.services.length === 0 ? (
-                  <p className="text-sm text-slate-450 italic">
-                    Nenhum serviço mapeado neste componente.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-                    <table className="w-full min-w-[850px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
-                      <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                        <tr>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[10%]">ID</th>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Método / Tipo</th>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[25%]">Endpoint / Tópico / Arquivo</th>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Descrição</th>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Request</th>
-                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Response / Saída</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                        {component.services.map((srv) => (
-                          <tr key={srv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
-                            <td className="px-4 py-2.5 font-mono font-semibold text-slate-700 dark:text-slate-300">
-                              {srv.serviceId || '-'}
-                            </td>
-                            <td className="px-4 py-2.5">
-                              <span className="inline-flex rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-750 dark:bg-indigo-950/30 dark:text-indigo-400">
-                                {srv.method}
-                              </span>
-                            </td>
-                            <td className="px-4 py-2.5 font-mono text-slate-650 dark:text-slate-300">
-                              {srv.endpoint || '-'}
-                            </td>
-                            <td className="px-4 py-2.5 text-slate-650 dark:text-slate-350">
-                              {srv.description || '-'}
-                            </td>
-                            <td className="px-4 py-2.5 text-slate-650 dark:text-slate-350 font-mono">
-                              {srv.request || '-'}
-                            </td>
-                            <td className="px-4 py-2.5 text-slate-650 dark:text-slate-350 font-mono">
-                              {srv.response || '-'}
-                            </td>
+            {/* Panel 2: Campos e Validações */}
+            <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950/20 overflow-hidden shadow-sm">
+              <button
+                type="button"
+                onClick={() => toggleSection('fields')}
+                className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 px-5 py-3.5 text-left font-display text-sm font-bold text-slate-800 dark:text-white hover:bg-slate-105 dark:hover:bg-slate-800/60 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="h-5 w-1 rounded-full bg-indigo-600 dark:bg-indigo-500"></span>
+                  <span>Campos e Validações</span>
+                </div>
+                <svg
+                  className={`h-4.5 w-4.5 text-slate-400 transition-transform duration-200 ${expandedSections.fields ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {expandedSections.fields && (
+                <div className="p-5 border-t border-slate-150 dark:border-slate-800/60 bg-white dark:bg-slate-900/10 space-y-3 animate-fade-in">
+                  <h5 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Campos e Validações Cadastrados
+                  </h5>
+                  {!component.fields || component.fields.length === 0 ? (
+                    <p className="text-sm text-slate-450 italic">
+                      Nenhum campo cadastrado neste componente.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                      <table className="w-full min-w-[800px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+                        <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          <tr>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Nome do Campo</th>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[30%]">Descrição</th>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[10%] text-center">Obrigatório</th>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Formato</th>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[25%]">Regras de Validação</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            )}
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                          {component.fields.map((field) => (
+                            <tr key={field.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
+                              <td className="px-4 py-2.5 font-mono font-semibold text-indigo-650 dark:text-indigo-400 break-all whitespace-pre-wrap">
+                                {field.fieldName || '-'}
+                              </td>
+                              <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 break-words whitespace-pre-wrap">
+                                {field.description || '-'}
+                              </td>
+                              <td className="px-4 py-2.5 text-center">
+                                {field.required ? (
+                                  <span className="inline-flex rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
+                                    Sim
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex rounded-full bg-slate-150/70 px-2.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                    Não
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-2.5">
+                                <span className="inline-flex rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-750 dark:bg-indigo-950/30 dark:text-indigo-400">
+                                  {field.format}
+                                </span>
+                              </td>
+                              <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 break-words whitespace-pre-wrap">
+                                {field.validationRules || '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Panel 3: Serviços de Integração */}
+            <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950/20 overflow-hidden shadow-sm">
+              <button
+                type="button"
+                onClick={() => toggleSection('services')}
+                className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 px-5 py-3.5 text-left font-display text-sm font-bold text-slate-800 dark:text-white hover:bg-slate-105 dark:hover:bg-slate-800/60 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="h-5 w-1 rounded-full bg-indigo-650 dark:bg-indigo-500"></span>
+                  <span>Serviços de Integração</span>
+                </div>
+                <svg
+                  className={`h-4.5 w-4.5 text-slate-400 transition-transform duration-200 ${expandedSections.services ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {expandedSections.services && (
+                <div className="p-5 border-t border-slate-150 dark:border-slate-800/60 bg-white dark:bg-slate-900/10 space-y-3 animate-fade-in">
+                  <h5 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Serviços e Integrações Mapeados
+                  </h5>
+                  {!component.services || component.services.length === 0 ? (
+                    <p className="text-sm text-slate-450 italic">
+                      Nenhum serviço mapeado neste componente.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                      <table className="w-full min-w-[850px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+                        <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          <tr>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[10%]">ID</th>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[10%]">Método / Tipo</th>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Endpoint / Tópico / Arquivo</th>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Descrição</th>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Request</th>
+                            <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Response / Saída</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                          {component.services.map((srv) => (
+                            <tr key={srv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
+                              <td className="px-4 py-2.5 font-mono font-semibold text-slate-700 dark:text-slate-300 break-all">
+                                {srv.serviceId || '-'}
+                              </td>
+                              <td className="px-4 py-2.5">
+                                <span className="inline-flex rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-750 dark:bg-indigo-950/30 dark:text-indigo-400">
+                                  {srv.method}
+                                </span>
+                              </td>
+                              <td className="px-4 py-2.5 font-mono text-slate-650 dark:text-slate-300 break-all whitespace-pre-wrap">
+                                {srv.endpoint || '-'}
+                              </td>
+                              <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 break-words whitespace-pre-wrap">
+                                {srv.description || '-'}
+                              </td>
+                              <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 font-mono break-all whitespace-pre-wrap">
+                                {srv.request || '-'}
+                              </td>
+                              <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 font-mono break-all whitespace-pre-wrap">
+                                {srv.response || '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

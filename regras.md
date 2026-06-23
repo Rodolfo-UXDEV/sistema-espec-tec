@@ -9,6 +9,7 @@ Este documento define as regras e diretrizes que devem ser seguidas pelo assiste
 - **Integridade da Documentação**: Mantenha todos os comentários e docstrings existentes que não estejam relacionados com as alterações.
 - **Links Clicáveis**: Sempre que mencionar arquivos ou símbolos de código no chat, crie links clicáveis no formato `[nome_do_arquivo](file:///caminho/absoluto/do/arquivo)`.
 - **Limitação de Escopo (MUITO IMPORTANTE)**: O assistente de IA **não deve fazer nada além do que for expressamente pedido pelo usuário**. Não tome a iniciativa de adicionar novas features, arquivos ou fazer mudanças que não tenham sido explicitamente solicitadas.
+- **Testes Automatizados e Simulações**: O assistente de IA **não deve executar testes automatizados ou simulações em navegador (como subagentes)** a menos que o usuário solicite isso expressamente no chat.
 
 ---
 

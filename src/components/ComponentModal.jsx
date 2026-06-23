@@ -163,7 +163,7 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
           {/* Component Name and Photo upload row */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-4">
-              {/* 1 - Campo para inserir o nome do componente */}
+              {/* 1 - Campo para inserir o nome da tela */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Nome do Componente *
@@ -171,20 +171,20 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                 <input
                   type="text"
                   required
-                  placeholder="Ex: Botão de Confirmar, Campo de Input de Email"
+                  placeholder="Ex: Componente de Login, Dashboard"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                 />
               </div>
 
-              {/* 3 - Campo para inserir uma descrição do componente */}
+              {/* 3 - Campo para inserir uma descrição da tela */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Descrição do Componente
                 </label>
                 <textarea
-                  placeholder="Descreva a função do componente na tela e seu comportamento..."
+                  placeholder="Descreva a função deste componente e seu comportamento..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
@@ -193,10 +193,10 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
               </div>
             </div>
 
-            {/* 2 - Adicionar uma foto do componente */}
+            {/* 2 - Adicionar uma foto da tela */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Foto do Componente
+                Mock-up / Imagem do Componente
               </label>
               
               {!image ? (
@@ -265,13 +265,13 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
           {/* 4 - Tabela de Campos e Validações */}
           <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              <label className="text-base font-bold text-slate-850 dark:text-slate-200">
                 Tabela de Campos e Validações
               </label>
               <button
                 type="button"
                 onClick={addFieldRow}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 <svg
                   className="h-3.5 w-3.5"
@@ -295,11 +295,11 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
               <table className="w-full min-w-[900px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
                 <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                   <tr>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Nome do Campo</th>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Descrição</th>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[10%] text-center">Obrigatório</th>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Formato</th>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[35%]">Regras de Validação</th>
+                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">NOME DO CAMPO</th>
+                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">DESCRIÇÃO</th>
+                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[10%] text-center">OBRIGATÓRIO</th>
+                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">FORMATO</th>
+                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[35%]">REGRAS DE VALIDAÇÃO</th>
                     <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-center w-[5%]"></th>
                   </tr>
                 </thead>
@@ -313,7 +313,7 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                           placeholder="Ex: email, cpf"
                           value={field.fieldName}
                           onChange={(e) => updateFieldRow(field.id, 'fieldName', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         />
                       </td>
                       <td className="px-3 py-2">
@@ -322,7 +322,7 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                           placeholder="Ex: Endereço de email do usuário"
                           value={field.description}
                           onChange={(e) => updateFieldRow(field.id, 'description', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         />
                       </td>
                       <td className="px-3 py-2 text-center">
@@ -330,14 +330,14 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                           type="checkbox"
                           checked={field.required}
                           onChange={(e) => updateFieldRow(field.id, 'required', e.target.checked)}
-                          className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
+                          className="h-4 w-4 rounded border-slate-350 text-indigo-600 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
                         />
                       </td>
                       <td className="px-3 py-2">
                         <select
                           value={field.format}
                           onChange={(e) => updateFieldRow(field.id, 'format', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         >
                           <option value="Texto">Texto</option>
                           <option value="Número">Número</option>
@@ -354,14 +354,14 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                           placeholder="Ex: Mínimo 8 caracteres"
                           value={field.validationRules}
                           onChange={(e) => updateFieldRow(field.id, 'validationRules', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         />
                       </td>
                       <td className="px-3 py-2 text-center">
                         <button
                           type="button"
                           onClick={() => removeFieldRow(field.id)}
-                          className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20"
+                          className="rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 active:scale-90 transition-all"
                           title="Remover linha"
                           disabled={fields.length === 1}
                         >
@@ -391,13 +391,13 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
           {/* Tabela de Serviços */}
           <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              <label className="text-base font-bold text-slate-855 dark:text-slate-200">
                 Tabela de Serviços
               </label>
               <button
                 type="button"
                 onClick={addServiceRow}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 <svg
                   className="h-3.5 w-3.5"
@@ -421,13 +421,13 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
               <table className="w-full min-w-[900px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
                 <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                   <tr>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[10%]">ID</th>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Método / Tipo</th>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[25%]">Endpoint / Tópico / Arquivo</th>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Descrição</th>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[13%]">Request</th>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[12%]">Response / Saída</th>
-                    <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-center w-[5%]"></th>
+                     <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[10%]">ID</th>
+                     <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[10%]">MÉTODO / TIPO</th>
+                     <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">ENDPOINT / TÓPICO / ARQUIVO</th>
+                     <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">DESCRIÇÃO</th>
+                     <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">REQUEST</th>
+                     <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">RESPONSE / SAÍDA</th>
+                     <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-center w-[5%]"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
@@ -440,14 +440,14 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                           placeholder="Ex: SRV-01"
                           value={srv.serviceId}
                           onChange={(e) => updateServiceRow(srv.id, 'serviceId', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         />
                       </td>
                       <td className="px-3 py-2">
                         <select
                           value={srv.method}
                           onChange={(e) => updateServiceRow(srv.id, 'method', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         >
                           <option value="GET">GET</option>
                           <option value="POST">POST</option>
@@ -465,7 +465,7 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                           placeholder="Ex: /api/v1/auth/login"
                           value={srv.endpoint}
                           onChange={(e) => updateServiceRow(srv.id, 'endpoint', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         />
                       </td>
                       <td className="px-3 py-2">
@@ -474,7 +474,7 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                           placeholder="Ex: Realiza a autenticação"
                           value={srv.description}
                           onChange={(e) => updateServiceRow(srv.id, 'description', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         />
                       </td>
                       <td className="px-3 py-2">
@@ -483,7 +483,7 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                           placeholder="Ex: { email, senha }"
                           value={srv.request}
                           onChange={(e) => updateServiceRow(srv.id, 'request', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         />
                       </td>
                       <td className="px-3 py-2">
@@ -492,14 +492,14 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                           placeholder="Ex: { token, user }"
                           value={srv.response}
                           onChange={(e) => updateServiceRow(srv.id, 'response', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         />
                       </td>
                       <td className="px-3 py-2 text-center">
                         <button
                           type="button"
                           onClick={() => removeServiceRow(srv.id)}
-                          className="rounded p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20"
+                          className="rounded-lg p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 active:scale-90 transition-all"
                           title="Remover linha"
                           disabled={services.length === 1}
                         >
@@ -539,7 +539,7 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
           <button
             type="button"
             onClick={handleSubmit}
-            className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 active:scale-95 transition-all"
+            className="rounded-xl bg-indigo-650 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 active:scale-95 transition-all"
           >
             Salvar Componente
           </button>

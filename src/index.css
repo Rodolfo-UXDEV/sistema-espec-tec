@@ -8,4 +8,22 @@
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Outfit', system-ui, -apple-system, sans-serif;
+
+  /* Custom palette derived from #262454 */
+  --color-indigo-50: #f0eff6;
+  --color-indigo-100: #e2e0ed;
+  --color-indigo-200: #c4c1dc;
+  --color-indigo-300: #9e9ac4;
+  --color-indigo-400: #7570a8;
+  --color-indigo-500: #4f4b88;
+  --color-indigo-600: #262454;
+  --color-indigo-650: #1e1d43;
+  --color-indigo-700: #1d1b3e;
+  --color-indigo-750: #171632;
+  --color-indigo-800: #14132c;
+  --color-indigo-900: #0f0e21;
+  --color-indigo-950: #080710;
+
+  --color-violet-600: #201e47;
+  --color-violet-700: #181736;
 }
