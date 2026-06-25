@@ -122,6 +122,79 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
   - Estilização premium e moderna utilizando classes do Tailwind CSS, mantendo alinhamento estético com o cabeçalho.
   - Verificação e compilação do projeto local com sucesso via Vite dev server.
 
+### Sessão 13: Carrossel na Galeria de Fluxos (25/06/2026)
+- **Objetivo**: Implementar carrossel/lightbox na galeria de fluxos propostos da tela de edição.
+- **Entregas**:
+  - Modificação do componente [FlowsGallery.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/FlowsGallery.jsx) para rastrear o índice da imagem ativa em vez da URL da imagem.
+  - Implementação de botões de navegação lateral (Anterior e Próximo) com suporte a rotação cíclica no lightbox.
+  - Adição de suporte a navegação por teclado (Seta Esquerda, Seta Direita e Escape).
+  - Adição de indicador visual de progresso (ex: `X de Y`).
+  - Verificação e compilação do projeto com sucesso.
+
+### Sessão 14: Tela Inicial de Seleção de Perfil (25/06/2026)
+- **Objetivo**: Criar a tela de seleção de perfil (LandingPage) baseada no mockup desenhado à mão.
+- **Entregas**:
+  - Criação do componente [LandingPage.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/LandingPage.jsx) com layout premium, suporte a dark mode, marca d'água hexagonal de fundo e os cards "Sou Desenvolvedor" (inativo) e "Sou Analista" (ativo).
+  - Integração da rota `landing` no [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) como tela padrão inicial.
+  - Modificação do [Header.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/Header.jsx) para redirecionar o usuário para a página de seleção (`landing`) ao clicar no logotipo.
+  - Ocultação condicional do cabeçalho global e breadcrumbs ao visualizar a tela de perfil.
+  - Verificação e compilação do projeto com sucesso.
+
+### Sessão 15: Modal de Confirmação de Exclusão de Componente (25/06/2026)
+- **Objetivo**: Criar uma modal de confirmação personalizada para substituir o dialog confirm nativo do navegador ao excluir um componente.
+- **Entregas**:
+  - Adição do estado `componentToDelete` e funções de manipulação em [ScreenEditor.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx).
+  - Implementação de modal customizada e premium com aviso de segurança ("Tem certeza que deseja excluir esse componente da tela?").
+  - Adição de botões "Não" (fecha modal) e "Sim, excluir!" (realiza exclusão e fecha modal).
+  - Verificação e compilação do projeto com sucesso.
+
+### Sessão 16: Modal de Confirmação de Exclusão de Tela (25/06/2026)
+- **Objetivo**: Criar uma modal de confirmação personalizada para substituir o dialog confirm nativo do navegador ao excluir uma tela na edição de especificações.
+- **Entregas**:
+  - Adição do estado `screenToDelete` e funções de manipulação em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Implementação de modal customizada e premium com aviso de segurança ("Tem certeza que deseja excluir essa tela?").
+  - Adição de botões "Não" (fecha modal) e "Sim, excluir!" (realiza exclusão e fecha modal).
+  - Verificação e compilação do projeto com sucesso.
+
+### Sessão 17: Padronização Escura dos Fundos de Modais (25/06/2026)
+- **Objetivo**: Padronizar todos os modais da aplicação com um fundo de overlay (backdrop) mais escuro (`bg-slate-950/80`) para maior foco visual.
+- **Entregas**:
+  - Modificação do overlay do modal de exclusão de tela em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Modificação do overlay do modal de exclusão de componente em [ScreenEditor.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx).
+  - Modificação do overlay do modal de detalhamento/criação em [ComponentModal.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ComponentModal.jsx).
+  - Modificação do overlay do modal de visualização em [ComponentViewModal.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ComponentViewModal.jsx).
+  - Modificação do overlay do modal de nova especificação em [SpecificationList.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx).
+  - Verificação e compilação do projeto com sucesso.
+
+### Sessão 18: Perfil do Desenvolvedor na Listagem de Especificações (25/06/2026)
+- **Objetivo**: Implementar a visão específica do Desenvolvedor para a listagem de especificações, restringindo ações conforme solicitado.
+- **Entregas**:
+  - Habilitação do botão "Sou Desenvolvedor" na tela inicial [LandingPage.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/LandingPage.jsx).
+  - Adição do estado `userRole` em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para gerenciar o perfil do usuário ativo.
+  - Implementação do prop `isDeveloper` no componente [SpecificationList.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx) para omitir os botões de arquivamento ("Arquivar especificação" no header e ícone "Arquivar" na tabela), botão de criação ("Nova especificação") e o botão de visualização ("Visualizar").
+  - Configuração do clique no nome da especificação para redirecionar o Desenvolvedor diretamente para a tela de edição.
+  - Verificação e compilação do projeto com sucesso.
+
+### Sessão 19: Troca de Ações do Desenvolvedor (25/06/2026)
+- **Objetivo**: Substituir o botão "Editar" pelo botão "Visualizar" nas especificações para o papel de Desenvolvedor.
+- **Entregas**:
+  - Modificação do componente [SpecificationList.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx) para exibir a ação "Visualizar" e ocultar a ação "Editar" para Desenvolvedores.
+  - Ajuste do link do nome da especificação para sempre abrir a visualização (`onView`) para ambos os perfis.
+  - Verificação e compilação do projeto com sucesso.
+
+### Sessão 20: Correção do Layout do Cabeçalho da Listagem (25/06/2026)
+- **Objetivo**: Corrigir o layout do cabeçalho na tela "Lista de Especificações", de forma que os botões de ação e o título fiquem alinhados lado a lado (em flex-row) e não empilhados incorretamente em coluna única.
+- **Entregas**:
+  - Fechamento correto da tag `<div>` de descrição da listagem em [SpecificationList.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx), que estava englobando e empilhando os botões de ação incorretamente.
+  - Remoção da tag `</div>` extra ao final do bloco de botões de ação.
+  - Verificação e compilação do projeto com sucesso.
+
+### Sessão 21: Atualização e Sincronização com o GitHub (25/06/2026)
+- **Objetivo**: Salvar todas as implementações das sessões 13 a 20 e subir o projeto atualizado no GitHub.
+- **Entregas**:
+  - Confirmação e commit de todas as alterações feitas (carrossel de imagens, tela inicial de perfil, modais de confirmação, padronização de fundos escuros de modais, perfil do desenvolvedor, e ajuste de layout no cabeçalho).
+  - Envio seguro dos commits para o repositório remoto no GitHub.
+
 ---
 
 ## Próximos Passos

@@ -12,6 +12,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingComponent, setEditingComponent] = useState(null);
   const [expandedStates, setExpandedStates] = useState({});
+  const [componentToDelete, setComponentToDelete] = useState(null);
 
   const toggleExpand = (compId) => {
     setExpandedStates((prev) => ({
@@ -41,8 +42,13 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
   };
 
   const handleDeleteComponent = (id) => {
-    if (confirm('Tem certeza que deseja remover este detalhamento?')) {
-      setComponents(components.filter((c) => c.id !== id));
+    setComponentToDelete(id);
+  };
+
+  const confirmDeleteComponent = () => {
+    if (componentToDelete !== null) {
+      setComponents(components.filter((c) => c.id !== componentToDelete));
+      setComponentToDelete(null);
     }
   };
 
@@ -117,7 +123,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
       <div className="w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
           <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
-            Detalhamento da Tela
+            Componentes da Tela
           </h2>
           <button
             onClick={handleAddComponent}
@@ -157,7 +163,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
                   className="rounded-2xl border border-slate-150 bg-slate-50/20 p-5 shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-800/80 dark:bg-slate-900/10"
                 >
                   {/* Component Header */}
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/50">
+                  <div className="flex items-center justify-between dark:border-slate-800/50">
                     <div
                       onClick={() => toggleExpand(comp.id)}
                       className="flex items-center gap-3 cursor-pointer select-none group/title"
@@ -183,7 +189,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
                       <button
                         onClick={() => handleEditComponent(comp)}
                         className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 hover:text-indigo-600 transition-all active:scale-90 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
-                        title="Editar Detalhamento"
+                        title="Editar Componente"
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -192,7 +198,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
                       <button
                         onClick={() => handleDeleteComponent(comp.id)}
                         className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-rose-50 hover:text-rose-600 transition-all active:scale-90 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-rose-950/20"
-                        title="Excluir Detalhamento"
+                        title="Excluir Componente"
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -442,6 +448,51 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
         onSave={handleSaveComponent}
         editingComponent={editingComponent}
       />
+
+      {/* Delete Confirmation Modal */}
+      {componentToDelete !== null && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border border-slate-250 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900"
+          >
+            {/* Warning Icon Header */}
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-500 dark:bg-rose-950/30 dark:text-rose-400">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            {/* Content text */}
+            <div className="mt-4 text-center">
+              <h3 className="text-base font-bold text-slate-800 dark:text-white">
+                Tem certeza que deseja excluir esse componente da tela?
+              </h3>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                Esta ação irá remover permanentemente o detalhamento e todas as suas tabelas de campos e serviços associados.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="mt-6 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setComponentToDelete(null)}
+                className="flex-1 rounded-xl bg-slate-100 hover:bg-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700/80 dark:text-slate-200 active:scale-95 transition-all cursor-pointer"
+              >
+                Não
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteComponent}
+                className="flex-1 rounded-xl bg-rose-500 hover:bg-rose-600 px-4 py-2.5 text-xs font-semibold text-white active:scale-95 transition-all cursor-pointer"
+              >
+                Sim, excluir!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

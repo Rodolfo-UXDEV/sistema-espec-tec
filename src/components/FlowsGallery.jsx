@@ -1,7 +1,25 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 export default function FlowsGallery({ flows = [], onChange }) {
-  const [activeFlowImage, setActiveFlowImage] = useState(null);
+  const [activeFlowIndex, setActiveFlowIndex] = useState(null);
+
+  // Keyboard navigation for carousel
+  useEffect(() => {
+    if (activeFlowIndex === null) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') {
+        setActiveFlowIndex((prev) => (prev + 1) % flows.length);
+      } else if (e.key === 'ArrowLeft') {
+        setActiveFlowIndex((prev) => (prev - 1 + flows.length) % flows.length);
+      } else if (e.key === 'Escape') {
+        setActiveFlowIndex(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeFlowIndex, flows.length]);
   const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -58,7 +76,7 @@ export default function FlowsGallery({ flows = [], onChange }) {
         {flows.map((flow, index) => (
           <div
             key={index}
-            onClick={() => setActiveFlowImage(flow)}
+            onClick={() => setActiveFlowIndex(index)}
             className="group relative aspect-video cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40 dark:hover:border-indigo-950"
           >
             <img
@@ -138,26 +156,80 @@ export default function FlowsGallery({ flows = [], onChange }) {
       </div>
 
       {/* Lightbox / Expanded View Modal */}
-      {activeFlowImage && (
+      {activeFlowIndex !== null && flows[activeFlowIndex] && (
         <div
-          onClick={() => setActiveFlowImage(null)}
-          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm cursor-zoom-out animate-in fade-in duration-200"
+          onClick={() => setActiveFlowIndex(null)}
+          className="fixed inset-0 z-[110] flex flex-col items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm cursor-zoom-out animate-in fade-in duration-200"
         >
+          {/* Close button */}
           <button
-            onClick={() => setActiveFlowImage(null)}
-            className="absolute top-6 right-6 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors"
+            onClick={() => setActiveFlowIndex(null)}
+            className="absolute top-6 right-6 z-[120] flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+            title="Fechar"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <div className="relative max-h-[90vh] max-w-[95vw] overflow-hidden rounded-lg shadow-2xl animate-in zoom-in-95 duration-200">
-            <img
-              src={activeFlowImage}
-              alt="Fluxo Ampliado"
-              className="max-h-[90vh] max-w-[95vw] object-contain rounded-lg"
-            />
+
+          {/* Navigation Controls Wrapper */}
+          <div className="relative flex items-center justify-center w-full max-w-7xl h-full max-h-[80vh] px-16 md:px-24">
+            
+            {/* Previous Button */}
+            {flows.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveFlowIndex((prev) => (prev - 1 + flows.length) % flows.length);
+                }}
+                className="absolute left-2 md:left-6 z-[120] flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg"
+                title="Anterior"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+
+            {/* Image Container */}
+            <div 
+              onClick={(e) => e.stopPropagation()} 
+              className="relative max-h-[80vh] max-w-full overflow-hidden rounded-xl shadow-2xl animate-in zoom-in-95 duration-200 cursor-default bg-slate-900/50"
+            >
+              <img
+                key={activeFlowIndex}
+                src={flows[activeFlowIndex]}
+                alt={`Fluxo ${activeFlowIndex + 1}`}
+                className="max-h-[80vh] max-w-full object-contain rounded-xl select-none animate-in fade-in zoom-in-98 duration-300"
+              />
+            </div>
+
+            {/* Next Button */}
+            {flows.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveFlowIndex((prev) => (prev + 1) % flows.length);
+                }}
+                className="absolute right-2 md:right-6 z-[120] flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-lg"
+                title="Próximo"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
           </div>
+
+          {/* Indicator Counter */}
+          {flows.length > 1 && (
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="mt-6 z-[120] select-none rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold tracking-wide text-white/90 backdrop-blur-sm cursor-default shadow-md"
+            >
+              {activeFlowIndex + 1} de {flows.length}
+            </div>
+          )}
         </div>
       )}
     </div>

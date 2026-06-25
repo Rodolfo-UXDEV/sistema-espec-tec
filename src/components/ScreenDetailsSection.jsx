@@ -78,7 +78,7 @@ export default function ScreenDetailsSection({ details, onAddClick, onEditClick,
                     </h3>
                   </div>
                 </div>
-                
+
                 {/* Actions */}
                 <div className="flex items-center gap-2 self-end md:self-auto">
                   <button

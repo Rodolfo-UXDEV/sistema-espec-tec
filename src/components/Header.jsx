@@ -5,7 +5,7 @@ export default function Header({ currentView, setCurrentView }) {
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <div
-          onClick={() => setCurrentView('home')}
+          onClick={() => setCurrentView('landing')}
           className="flex items-center gap-3 cursor-pointer select-none group"
         >
           {/* Logo Icon */}

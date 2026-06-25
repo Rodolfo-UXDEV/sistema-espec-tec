@@ -25,7 +25,7 @@ export default function ComponentViewModal({ isOpen, onClose, component }) {
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm animate-fade-in"
     >
       <div className="flex max-h-[90vh] w-full max-w-7xl flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 overflow-hidden animate-scale-up">
         {/* Modal Header */}

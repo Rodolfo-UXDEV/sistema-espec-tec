@@ -130,7 +130,7 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm animate-fade-in">
       <div className="flex max-h-[90vh] w-full max-w-7xl flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 overflow-hidden animate-scale-up">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">

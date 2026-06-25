@@ -7,6 +7,7 @@ import ScreenViewer from './components/ScreenViewer';
 import SpecificationList from './components/SpecificationList';
 import FlowsGallery from './components/FlowsGallery';
 import ScreenEditor from './components/ScreenEditor';
+import LandingPage from './components/LandingPage';
 import { supabase } from './supabaseClient';
 import './App.css';
 
@@ -16,8 +17,10 @@ export default function App() {
   const [screenName, setScreenName] = useState('');
   
   // Navigation state
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'edit', 'view' or 'screen-editor'
+  const [currentView, setCurrentView] = useState('landing'); // 'landing', 'home', 'edit', 'view' or 'screen-editor'
   const [activeScreen, setActiveScreen] = useState(null);
+  const [screenToDelete, setScreenToDelete] = useState(null);
+  const [userRole, setUserRole] = useState('analista'); // 'analista' or 'desenvolvedor'
   
   // Supabase states
   const [screensList, setScreensList] = useState([]);
@@ -246,8 +249,13 @@ export default function App() {
   };
 
   const handleDeleteClick = (id) => {
-    if (confirm('Tem certeza que deseja remover esta tela da especificação?')) {
-      setDetails(details.filter((item) => item.id !== id));
+    setScreenToDelete(id);
+  };
+
+  const confirmDeleteScreen = () => {
+    if (screenToDelete !== null) {
+      setDetails(details.filter((item) => item.id !== screenToDelete));
+      setScreenToDelete(null);
     }
   };
 
@@ -614,11 +622,13 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200">
       {/* Header com o nome "Especificação Técnica Alesp" e navegação */}
-      <Header currentView={currentView} setCurrentView={setCurrentView} />
+      {currentView !== 'landing' && (
+        <Header currentView={currentView} setCurrentView={setCurrentView} />
+      )}
 
-      <main className={`mx-auto max-w-7xl px-6 ${currentView === 'home' ? 'py-10' : 'pt-3 pb-10'}`}>
+      <main className={`mx-auto max-w-7xl px-6 ${currentView === 'home' || currentView === 'landing' ? 'py-10' : 'pt-3 pb-10'}`}>
         {/* Caminho de Pão (Breadcrumbs) */}
-        {currentView !== 'home' && (
+        {currentView !== 'home' && currentView !== 'landing' && (
           <nav className="mb-9 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <button
               onClick={() => setCurrentView('home')}
@@ -654,7 +664,18 @@ export default function App() {
           </nav>
         )}
 
-        {currentView === 'home' ? (
+        {currentView === 'landing' ? (
+          <LandingPage 
+            onSelectAnalista={() => {
+              setUserRole('analista');
+              setCurrentView('home');
+            }} 
+            onSelectDesenvolvedor={() => {
+              setUserRole('desenvolvedor');
+              setCurrentView('home');
+            }}
+          />
+        ) : currentView === 'home' ? (
           <SpecificationList
             screensList={screensList}
             onEdit={handleEditScreen}
@@ -665,6 +686,7 @@ export default function App() {
             archivedIds={archivedIds}
             isLoading={isLoading}
             specAuthors={specAuthors}
+            isDeveloper={userRole === 'desenvolvedor'}
           />
         ) : currentView === 'view' ? (
           <ScreenViewer
@@ -843,6 +865,51 @@ export default function App() {
           </>
         )}
       </main>
+
+      {/* Delete Screen Confirmation Modal */}
+      {screenToDelete !== null && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border border-slate-250 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900"
+          >
+            {/* Warning Icon Header */}
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-500 dark:bg-rose-950/30 dark:text-rose-400">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            {/* Content text */}
+            <div className="mt-4 text-center">
+              <h3 className="text-base font-bold text-slate-800 dark:text-white">
+                Tem certeza que deseja excluir essa tela?
+              </h3>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                Esta ação irá remover permanentemente a tela e todos os seus detalhamentos de componentes associados da especificação técnica.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="mt-6 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setScreenToDelete(null)}
+                className="flex-1 rounded-xl bg-slate-100 hover:bg-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700/80 dark:text-slate-200 active:scale-95 transition-all cursor-pointer"
+              >
+                Não
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteScreen}
+                className="flex-1 rounded-xl bg-rose-500 hover:bg-rose-600 px-4 py-2.5 text-xs font-semibold text-white active:scale-95 transition-all cursor-pointer"
+              >
+                Sim, excluir!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
