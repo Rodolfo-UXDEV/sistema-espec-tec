@@ -718,6 +718,7 @@ export default function App() {
               setActiveScreen(screen);
               setCurrentView('screen-editor');
             }}
+            onBack={() => setCurrentView('home')}
           />
         ) : currentView === 'screen-editor' ? (
           userRole === 'desenvolvedor' ? (
@@ -747,23 +748,31 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* Load Spec Selector */}
-                <div className="flex items-center gap-2 self-start md:self-auto">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-450">
-                    Carregar Especificação:
-                  </label>
-                  <select
-                    value={selectedScreenId}
-                    onChange={(e) => loadScreenData(e.target.value)}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-900"
+                {/* Load Spec Selector & Back Button */}
+                <div className="flex items-center gap-3 self-start md:self-auto flex-wrap">
+                  <button
+                    onClick={() => setCurrentView('home')}
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
                   >
-                    <option value="">-- Nova Especificação --</option>
-                    {screensList.map((screen) => (
-                      <option key={screen.id} value={screen.id}>
-                        {screen.name}
-                      </option>
-                    ))}
-                  </select>
+                    Voltar para Lista
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-slate-455">
+                      Carregar Especificação:
+                    </label>
+                    <select
+                      value={selectedScreenId}
+                      onChange={(e) => loadScreenData(e.target.value)}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-900"
+                    >
+                      <option value="">-- Nova Especificação --</option>
+                      {screensList.map((screen) => (
+                        <option key={screen.id} value={screen.id}>
+                          {screen.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
               
