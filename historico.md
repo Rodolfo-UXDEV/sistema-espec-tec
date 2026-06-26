@@ -437,12 +437,11 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
   - Modificação do componente [Header.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/Header.jsx) para remover os botões de abas de navegação e o bloco indicador de status de ambiente.
   - Verificação e compilação do projeto com sucesso via Vite.
 
-### Sessão 27: Botões de Retorno para Lista de Especificações (26/06/2026)
-- **Objetivo**: Adicionar botões de "Voltar para Lista" nas telas de "Editar Especificação" e "Visualizar Especificação" para facilitar a navegação do usuário de volta ao painel principal.
+### Sessão 27: Botões de Retorno perante o Caminho de Pão (26/06/2026)
+- **Objetivo**: Adicionar botões de "Voltar para Lista" nas telas de "Editar Especificação" e "Visualizar Especificação", alinhados horizontalmente no lado oposto (direito) da barra de caminho de pão (breadcrumbs).
 - **Entregas**:
-  - Modificação de [ScreenViewer.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx) para receber o prop `onBack` e renderizar o botão "Voltar para Lista" no cabeçalho.
-  - Modificação do template de "Editar Especificação" em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para incluir o botão "Voltar para Lista" integrado ao lado do seletor.
-  - Configuração do callback de retorno em ambos os componentes direcionando o estado de rota de volta para `'home'`.
+  - Modificação de [ScreenViewer.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx) limpando o botão de voltar inserido localmente no seletor.
+  - Atualização do container de caminho de pão (breadcrumbs) em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para utilizar a propriedade flex `justify-between`, agrupando a trilha à esquerda e posicionando o botão "Voltar para Lista" à direita da linha.
   - Verificação e compilação do projeto com sucesso via Vite.
 
 ---
