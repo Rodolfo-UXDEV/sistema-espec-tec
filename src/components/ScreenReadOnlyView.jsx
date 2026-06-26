@@ -172,7 +172,7 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-3xl border border-slate-250 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900 overflow-hidden"
+            className="w-full max-w-7xl max-h-[90vh] flex flex-col rounded-3xl border border-slate-250 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900 overflow-hidden"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
