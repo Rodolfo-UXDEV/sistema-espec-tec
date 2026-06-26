@@ -29,43 +29,6 @@ export default function Header({ currentView, setCurrentView, isDeveloper = fals
             Especificação Técnica Alesp
           </span>
         </div>
-
-        {/* Navigation Tabs */}
-        {!isDeveloper && (
-          <div className="flex items-center gap-1.5 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-            <button
-              onClick={() => setCurrentView('edit')}
-              className={`rounded-lg px-4 py-1.5 text-xs font-bold transition-all duration-200 ${
-                currentView === 'edit'
-                  ? 'bg-white text-indigo-650 shadow-sm dark:bg-slate-700 dark:text-indigo-400'
-                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-              }`}
-            >
-              Editar Especificação
-            </button>
-            <button
-              onClick={() => setCurrentView('view')}
-              className={`rounded-lg px-4 py-1.5 text-xs font-bold transition-all duration-200 ${
-                currentView === 'view'
-                  ? 'bg-white text-indigo-650 shadow-sm dark:bg-slate-700 dark:text-indigo-400'
-                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-              }`}
-            >
-              Visualizar Especificação
-            </button>
-          </div>
-        )}
-        
-        {/* Status Badge */}
-        <div className="hidden sm:flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-          </span>
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Ambiente Local
-          </span>
-        </div>
       </div>
     </header>
   );
