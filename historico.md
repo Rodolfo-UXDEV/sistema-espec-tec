@@ -232,6 +232,7 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
   - Restauração do componente [ScreenEditor.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx) para o formato original, mantendo-o estrito e inalterado para o perfil do Analista.
   - Criação do novo componente [ScreenReadOnlyView.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx) contendo o título "Visualizar tela", exibição estática do mock-up da tela, e uma galeria/grid de cards para os componentes da tela (mostrando imagem do componente e seu nome).
   - Implementação de um modal detalhado dentro de [ScreenReadOnlyView.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx) com a foto do componente centralizada no topo e as demais informações organizadas em Abas (Geral, Campos e Validações, Serviços).
+  - Ajuste de largura da modal de visualização de componentes para `max-w-7xl`, alinhando-se à largura máxima do container principal do aplicativo.
   - Integração do novo componente no roteamento de `screen-editor` dentro de [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para o papel de `desenvolvedor`.
   - Verificação e compilação do projeto com sucesso via Vite.
 
