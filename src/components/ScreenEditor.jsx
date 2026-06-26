@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ImageUploader from './ImageUploader';
 import ComponentModal from './ComponentModal';
 
-export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnly = false }) {
+export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
   const [currentScreen, setCurrentScreen] = useState(screen);
   const [name, setName] = useState(screen ? screen.name : '');
   const [image, setImage] = useState(screen ? screen.image : null);
@@ -17,7 +17,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
   const toggleExpand = (compId) => {
     setExpandedStates((prev) => ({
       ...prev,
-      [compId]: prev[compId] === undefined ? false : !prev[compId],
+      [compId]: prev[compId] === undefined ? true : !prev[compId],
     }));
   };
 
@@ -27,7 +27,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
     const key = `${compId}-${section}`;
     setExpandedDetails((prev) => ({
       ...prev,
-      [key]: prev[key] === undefined ? false : !prev[key],
+      [key]: prev[key] === undefined ? true : !prev[key],
     }));
   };
 
@@ -83,7 +83,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-6 dark:border-slate-800">
         <div>
           <h1 className="font-display text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            {readOnly ? 'Visualizar tela' : (screen ? 'Editar Tela' : 'Adicionar Tela')}
+            {screen ? 'Editar Tela' : 'Adicionar Tela'}
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Gerencie o mockup principal da tela e detalhe seus componentes, campos e serviços.
@@ -107,8 +107,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
           placeholder="Ex: Tela de Login, Home Dashboard"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          disabled={readOnly}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-955/60 dark:text-slate-200 disabled:opacity-75 disabled:cursor-not-allowed"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
         />
       </div>
 
@@ -117,7 +116,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
         <label className="font-display text-sm font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400">
           Mock-up / Imagem da Tela
         </label>
-        <ImageUploader image={image} setImage={setImage} readOnly={readOnly} />
+        <ImageUploader image={image} setImage={setImage} />
       </div>
 
       {/* 2 - Seção Detalhamento da Tela */}
@@ -126,17 +125,15 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
           <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
             Componentes da Tela
           </h2>
-          {!readOnly && (
-            <button
-              onClick={handleAddComponent}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-650 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 active:scale-95 transition-all duration-200"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
-              </svg>
-              Novo
-            </button>
-          )}
+          <button
+            onClick={handleAddComponent}
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-650 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 active:scale-95 transition-all duration-200"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            Novo
+          </button>
         </div>
 
         {/* List of Detailed Components */}
@@ -151,14 +148,12 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
               <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
                 Nenhum componente foi detalhado nesta tela ainda.
               </p>
-              {!readOnly && (
-                <button
-                  onClick={handleAddComponent}
-                  className="mt-2 text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
-                >
-                  Clique para adicionar o primeiro detalhamento
-                </button>
-              )}
+              <button
+                onClick={handleAddComponent}
+                className="mt-2 text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+              >
+                Clique para adicionar o primeiro detalhamento
+              </button>
             </div>
           ) : (
             <div className="space-y-6">
@@ -180,7 +175,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
                         {comp.name}
                       </span>
                       <svg
-                        className={`h-4.5 w-4.5 text-slate-400 group-hover/title:text-indigo-650 dark:group-hover/title:text-indigo-400 transition-transform duration-200 ${expandedStates[comp.id] !== false ? 'rotate-180' : ''}`}
+                        className={`h-4.5 w-4.5 text-slate-400 group-hover/title:text-indigo-650 dark:group-hover/title:text-indigo-400 transition-transform duration-200 ${expandedStates[comp.id] === true ? 'rotate-180' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -188,32 +183,31 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
+
                     {/* Actions */}
-                    {!readOnly && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleEditComponent(comp)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 hover:text-indigo-650 transition-all active:scale-90 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
-                          title="Editar Componente"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteComponent(comp.id)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-rose-50 hover:text-rose-600 transition-all active:scale-90 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-rose-950/20"
-                          title="Excluir Componente"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleEditComponent(comp)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 hover:text-indigo-600 transition-all active:scale-90 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+                        title="Editar Componente"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteComponent(comp.id)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 shadow-sm hover:bg-rose-50 hover:text-rose-600 transition-all active:scale-90 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-rose-950/20"
+                        title="Excluir Componente"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                   {/* Component Details Content */}
-                  {expandedStates[comp.id] !== false && (
+                  {expandedStates[comp.id] === true && (
                     <div className="mt-4 space-y-4 animate-fade-in">
                       {/* Section 1: Geral / Descrição */}
                       <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/20 overflow-hidden shadow-sm">
@@ -227,7 +221,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
                             <span>Descrição e Mock-up</span>
                           </div>
                           <svg
-                            className={`h-4.5 w-4.5 text-slate-400 transition-transform duration-200 ${expandedDetails[`${comp.id}-general`] !== false ? 'rotate-180' : ''}`}
+                            className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${expandedDetails[`${comp.id}-general`] === true ? 'rotate-180' : ''}`}
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -235,7 +229,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
                           </svg>
                         </button>
-                        {expandedDetails[`${comp.id}-general`] !== false && (
+                        {expandedDetails[`${comp.id}-general`] === true && (
                           <div className="p-4 border-t border-slate-150 dark:border-slate-800/60 bg-white dark:bg-slate-900/10 space-y-4 animate-fade-in">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               {/* Left: Description */}
@@ -289,7 +283,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
                             <span>Tabela de Campos e Validações</span>
                           </div>
                           <svg
-                            className={`h-4.5 w-4.5 text-slate-400 transition-transform duration-200 ${expandedDetails[`${comp.id}-fields`] !== false ? 'rotate-180' : ''}`}
+                            className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${expandedDetails[`${comp.id}-fields`] === true ? 'rotate-180' : ''}`}
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -297,7 +291,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
                           </svg>
                         </button>
-                        {expandedDetails[`${comp.id}-fields`] !== false && (
+                        {expandedDetails[`${comp.id}-fields`] === true && (
                           <div className="p-4 border-t border-slate-150 dark:border-slate-800/60 bg-white dark:bg-slate-900/10 space-y-2 animate-fade-in">
                             {!comp.fields || comp.fields.length === 0 ? (
                               <p className="text-xs text-slate-400 italic pl-1">Nenhum campo cadastrado.</p>
@@ -363,7 +357,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
                             <span>Tabela de Serviços</span>
                           </div>
                           <svg
-                            className={`h-4.5 w-4.5 text-slate-400 transition-transform duration-200 ${expandedDetails[`${comp.id}-services`] !== false ? 'rotate-180' : ''}`}
+                            className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${expandedDetails[`${comp.id}-services`] === true ? 'rotate-180' : ''}`}
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -371,7 +365,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
                           </svg>
                         </button>
-                        {expandedDetails[`${comp.id}-services`] !== false && (
+                        {expandedDetails[`${comp.id}-services`] === true && (
                           <div className="p-4 border-t border-slate-150 dark:border-slate-800/60 bg-white dark:bg-slate-900/10 space-y-2 animate-fade-in">
                             {!comp.services || comp.services.length === 0 ? (
                               <p className="text-xs text-slate-400 italic pl-1">Nenhum serviço mapeado.</p>
@@ -430,25 +424,22 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving, readOnl
       </div>
 
       {/* Save Button */}
-      {/* Save Button */}
-      {!readOnly && (
-        <div className="flex justify-end pt-4">
-          <button
-            onClick={handleSaveScreen}
-            disabled={isSaving}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-6 py-3 font-semibold text-white shadow-lg hover:from-indigo-600 hover:to-violet-700 active:scale-98 transition-all disabled:opacity-50"
-          >
-            {isSaving ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                Gravando...
-              </>
-            ) : (
-              'Gravar'
-            )}
-          </button>
-        </div>
-      )}
+      <div className="flex justify-end pt-4">
+        <button
+          onClick={handleSaveScreen}
+          disabled={isSaving}
+          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-6 py-3 font-semibold text-white shadow-lg hover:from-indigo-600 hover:to-violet-700 active:scale-98 transition-all disabled:opacity-50"
+        >
+          {isSaving ? (
+            <>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              Gravando...
+            </>
+          ) : (
+            'Gravar'
+          )}
+        </button>
+      </div>
 
       {/* Modal Dialog for Detalhamento (attached style) */}
       <ComponentModal

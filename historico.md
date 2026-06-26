@@ -226,6 +226,17 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
 
 ---
 
+### Sessão 25: Componente Exclusivo de Visualização do Desenvolvedor (26/06/2026)
+- **Objetivo**: Criar uma visualização de tela dedicada para o desenvolvedor ("Visualizar tela"), exibindo os componentes da tela em formato de galeria/cards com fotos e permitindo a abertura de um modal com detalhes organizados em abas.
+- **Entregas**:
+  - Restauração do componente [ScreenEditor.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx) para o formato original, mantendo-o estrito e inalterado para o perfil do Analista.
+  - Criação do novo componente [ScreenReadOnlyView.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx) contendo o título "Visualizar tela", exibição estática do mock-up da tela, e uma galeria/grid de cards para os componentes da tela (mostrando imagem do componente e seu nome).
+  - Implementação de um modal detalhado dentro de [ScreenReadOnlyView.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx) com a foto do componente centralizada no topo e as demais informações organizadas em Abas (Geral, Campos e Validações, Serviços).
+  - Integração do novo componente no roteamento de `screen-editor` dentro de [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para o papel de `desenvolvedor`.
+  - Verificação e compilação do projeto com sucesso via Vite.
+
+---
+
 ## Próximos Passos
 1. **Ativar RLS (Row Level Security)**: Conversar com o usuário sobre a ativação do RLS nas tabelas do Supabase para garantir a segurança dos dados em produção.
 2. **Exportação de Especificações**: Implementar a funcionalidade para exportar especificações em Markdown ou PDF.

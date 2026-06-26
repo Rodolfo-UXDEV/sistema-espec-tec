@@ -7,6 +7,7 @@ import ScreenViewer from './components/ScreenViewer';
 import SpecificationList from './components/SpecificationList';
 import FlowsGallery from './components/FlowsGallery';
 import ScreenEditor from './components/ScreenEditor';
+import ScreenReadOnlyView from './components/ScreenReadOnlyView';
 import LandingPage from './components/LandingPage';
 import { supabase } from './supabaseClient';
 import './App.css';
@@ -719,13 +720,19 @@ export default function App() {
             }}
           />
         ) : currentView === 'screen-editor' ? (
-          <ScreenEditor
-            screen={activeScreen}
-            onSave={handleSaveScreen}
-            onBack={() => setCurrentView(userRole === 'desenvolvedor' ? 'view' : 'edit')}
-            isSaving={isSaving}
-            readOnly={userRole === 'desenvolvedor'}
-          />
+          userRole === 'desenvolvedor' ? (
+            <ScreenReadOnlyView
+              screen={activeScreen}
+              onBack={() => setCurrentView('view')}
+            />
+          ) : (
+            <ScreenEditor
+              screen={activeScreen}
+              onSave={handleSaveScreen}
+              onBack={() => setCurrentView('edit')}
+              isSaving={isSaving}
+            />
+          )
         ) : (
           <>
             {/* Page Title & Loader/Controls */}
