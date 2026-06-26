@@ -3,7 +3,7 @@
 Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração de Especificações Técnicas**, servindo como memória para as sessões de trabalho.
 ## Estado Atual
 - **Fase**: Desenvolvimento
-- **Última Atualização**: 23 de Junho de 2026 (10:10)
+- **Última Atualização**: 26 de Junho de 2026 (11:00)
 - **Foco Atual**: Reestruturação das telas de edição e visualização de especificações concluída (galeria de fluxos, descrição e listagem/detalhamento compacto de telas em substituição ao modelo antigo).
 
 
@@ -194,6 +194,35 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
 - **Entregas**:
   - Confirmação e commit de todas as alterações feitas (carrossel de imagens, tela inicial de perfil, modais de confirmação, padronização de fundos escuros de modais, perfil do desenvolvedor, e ajuste de layout no cabeçalho).
   - Envio seguro dos commits para o repositório remoto no GitHub.
+
+### Sessão 22: Correção de Navegação e Restrição do Desenvolvedor (26/06/2026)
+- **Objetivo**: Garantir que o clique em "Visualizar" leve o Desenvolvedor para a especificação correta, e ocultar opções de edição no Cabeçalho para manter o perfil estritamente de leitura.
+- **Entregas**:
+  - Correção/validação do redirecionamento do botão "Visualizar" (ícone de olho) em [SpecificationList.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx) para acionar o fluxo de carregamento e renderização do visualizador de especificações.
+  - Atualização do componente [Header.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/Header.jsx) para receber o prop `isDeveloper` e ocultar as abas de navegação de edição quando o usuário for um Desenvolvedor.
+  - Atualização do [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para passar a prop `isDeveloper` ao cabeçalho.
+  - Ocultação do botão "Começar Agora" (CTA de lista vazia) para desenvolvedores no [SpecificationList.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx).
+
+### Sessão 23: Fortalecimento das Regras dos Perfis (26/06/2026)
+- **Objetivo**: Blindar a aplicação contra acessos indevidos às telas de edição por usuários do perfil Desenvolvedor e ajustar a navegação/componentes do visualizador.
+- **Entregas**:
+  - Implementação de um `useEffect` de segurança (guard) em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) que monitora o estado de navegação. Caso um usuário no papel de `desenvolvedor` tente acessar os estados `'edit'` ou `'screen-editor'`, ele é automaticamente redirecionado de volta para a tela inicial `'home'`.
+  - Remoção do comportamento de abertura automática do modal de detalhamento do primeiro componente ao carregar uma especificação no visualizador ([ScreenViewer.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx)).
+  - Atualização do componente [FlowsGallery.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/FlowsGallery.jsx) para suportar uma prop `readOnly`, ocultando controles de upload/exclusão.
+  - Substituição da galeria de imagens estática no visualizador [ScreenViewer.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx) pelo componente `FlowsGallery` configurado como `readOnly={true}`, garantindo que o Desenvolvedor veja a galeria de fluxos com o mesmo comportamento premium de carrossel de fotos (lightbox com controles de navegação e indicadores) que o Analista possui no editor.
+  - Confirmação de que todas as exibições de detalhes de especificações (Visualização) e modais associados são puramente de leitura, garantindo que o Desenvolvedor não tenha capacidade de modificar dados na base.
+
+---
+
+### Sessão 24: Visualização de Detalhes da Tela para Desenvolvedores (26/06/2026)
+- **Objetivo**: Permitir que desenvolvedores cliquem em uma tela na seção "Telas da Especificação" para visualizar seus componentes e fotos de forma detalhada em modo somente leitura (reaproveitando o layout da tela de edição sob o título "Visualizar tela").
+- **Entregas**:
+  - Correção de erro de sintaxe JSX em [ScreenEditor.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx) nos fechamentos das tags e ações de componentes.
+  - Atualização dos estados de expansão de componentes em [ScreenEditor.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx) para iniciar abertos por padrão (`!== false`), permitindo ao desenvolvedor ver as fotos e descrições dos componentes imediatamente ao entrar na tela sem precisar de cliques adicionais.
+  - Ajuste no visualizador de especificações [ScreenViewer.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx) para redirecionar o clique de um card de tela para a visualização detalhada (`onSelectScreen`).
+  - Atualização do controle de rotas em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para permitir o acesso do Desenvolvedor ao `'screen-editor'` (em modo `readOnly`), ajustando o `useEffect` de segurança.
+  - Adaptação dos breadcrumbs em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para exibir "Visualizar tela" e voltar para a tela de visualização da especificação quando o papel for Desenvolvedor.
+  - Verificação e compilação do projeto com sucesso via Vite.
 
 ---
 

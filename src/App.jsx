@@ -69,6 +69,13 @@ export default function App() {
     fetchScreensList();
   }, []);
 
+  // Security guard for Developer role: redirect if they try to access edit views
+  useEffect(() => {
+    if (userRole === 'desenvolvedor' && currentView === 'edit') {
+      setCurrentView('home');
+    }
+  }, [userRole, currentView]);
+
   const fetchScreensList = async () => {
     setIsLoading(true);
     try {
@@ -623,7 +630,11 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 text-slate-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200">
       {/* Header com o nome "Especificação Técnica Alesp" e navegação */}
       {currentView !== 'landing' && (
-        <Header currentView={currentView} setCurrentView={setCurrentView} />
+        <Header 
+          currentView={currentView} 
+          setCurrentView={setCurrentView} 
+          isDeveloper={userRole === 'desenvolvedor'}
+        />
       )}
 
       <main className={`mx-auto max-w-7xl px-6 ${currentView === 'home' || currentView === 'landing' ? 'py-10' : 'pt-3 pb-10'}`}>
@@ -650,14 +661,16 @@ export default function App() {
             {currentView === 'screen-editor' && (
               <>
                 <button
-                  onClick={() => setCurrentView('edit')}
+                  onClick={() => setCurrentView(userRole === 'desenvolvedor' ? 'view' : 'edit')}
                   className="font-medium hover:text-indigo-600 transition-colors cursor-pointer"
                 >
                   {screenName || 'Especificação'}
                 </button>
                 <span className="text-slate-300 dark:text-slate-700">/</span>
                 <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {activeScreen ? `Editar Tela: ${activeScreen.name}` : 'Adicionar Tela'}
+                  {userRole === 'desenvolvedor'
+                    ? `Visualizar Tela: ${activeScreen?.name || ''}`
+                    : (activeScreen ? `Editar Tela: ${activeScreen.name}` : 'Adicionar Tela')}
                 </span>
               </>
             )}
@@ -700,13 +713,18 @@ export default function App() {
             specDescription={specDescription}
             specFlows={specFlows}
             specAuthors={specAuthors}
+            onSelectScreen={(screen) => {
+              setActiveScreen(screen);
+              setCurrentView('screen-editor');
+            }}
           />
         ) : currentView === 'screen-editor' ? (
           <ScreenEditor
             screen={activeScreen}
             onSave={handleSaveScreen}
-            onBack={() => setCurrentView('edit')}
+            onBack={() => setCurrentView(userRole === 'desenvolvedor' ? 'view' : 'edit')}
             isSaving={isSaving}
+            readOnly={userRole === 'desenvolvedor'}
           />
         ) : (
           <>

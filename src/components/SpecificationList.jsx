@@ -169,7 +169,7 @@ export default function SpecificationList({
               ? 'Nenhuma especificação foi arquivada até o momento.'
               : 'Clique em "Nova especificação" para começar a documentar suas telas.'}
           </p>
-          {!showArchived && (
+          {!showArchived && !isDeveloper && (
             <button
               onClick={onNew}
               className="mt-4 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-all"
