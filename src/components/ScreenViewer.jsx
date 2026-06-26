@@ -57,33 +57,23 @@ export default function ScreenViewer({
           </p>
         </div>
 
-        {/* Spec Selector & Back Button */}
-        <div className="flex items-center gap-3 self-start md:self-auto flex-wrap">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
-            >
-              Voltar para Lista
-            </button>
-          )}
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Selecionar Especificação:
-            </label>
-            <select
-              value={selectedScreenId}
-              onChange={(e) => loadScreenData(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-            >
-              <option value="">-- Selecione uma Especificação --</option>
-              {screensList.map((screen) => (
-                <option key={screen.id} value={screen.id}>
-                  {screen.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Spec Selector */}
+        <div className="flex items-center gap-3 self-start md:self-auto">
+          <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Selecionar Especificação:
+          </label>
+          <select
+            value={selectedScreenId}
+            onChange={(e) => loadScreenData(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+          >
+            <option value="">-- Selecione uma Especificação --</option>
+            {screensList.map((screen) => (
+              <option key={screen.id} value={screen.id}>
+                {screen.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

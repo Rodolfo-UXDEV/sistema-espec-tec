@@ -641,39 +641,52 @@ export default function App() {
       <main className={`mx-auto max-w-7xl px-6 ${currentView === 'home' || currentView === 'landing' ? 'py-10' : 'pt-3 pb-10'}`}>
         {/* Caminho de Pão (Breadcrumbs) */}
         {currentView !== 'home' && currentView !== 'landing' && (
-          <nav className="mb-9 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-            <button
-              onClick={() => setCurrentView('home')}
-              className="font-medium hover:text-indigo-600 transition-colors cursor-pointer"
-            >
-              Início
-            </button>
-            <span className="text-slate-300 dark:text-slate-700">/</span>
-            {currentView === 'edit' && (
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
-                {screenName || 'Nova Especificação'}
-              </span>
-            )}
-            {currentView === 'view' && (
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
-                {screenName || 'Especificação'} (Visualizar)
-              </span>
-            )}
-            {currentView === 'screen-editor' && (
-              <>
-                <button
-                  onClick={() => setCurrentView(userRole === 'desenvolvedor' ? 'view' : 'edit')}
-                  className="font-medium hover:text-indigo-600 transition-colors cursor-pointer"
-                >
-                  {screenName || 'Especificação'}
-                </button>
-                <span className="text-slate-300 dark:text-slate-700">/</span>
+          <nav className="mb-9 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+            {/* Breadcrumb links */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentView('home')}
+                className="font-medium hover:text-indigo-600 transition-colors cursor-pointer"
+              >
+                Início
+              </button>
+              <span className="text-slate-300 dark:text-slate-700">/</span>
+              {currentView === 'edit' && (
                 <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {userRole === 'desenvolvedor'
-                    ? `Visualizar Tela: ${activeScreen?.name || ''}`
-                    : (activeScreen ? `Editar Tela: ${activeScreen.name}` : 'Adicionar Tela')}
+                  {screenName || 'Nova Especificação'}
                 </span>
-              </>
+              )}
+              {currentView === 'view' && (
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {screenName || 'Especificação'} (Visualizar)
+                </span>
+              )}
+              {currentView === 'screen-editor' && (
+                <>
+                  <button
+                    onClick={() => setCurrentView(userRole === 'desenvolvedor' ? 'view' : 'edit')}
+                    className="font-medium hover:text-indigo-600 transition-colors cursor-pointer"
+                  >
+                    {screenName || 'Especificação'}
+                  </button>
+                  <span className="text-slate-300 dark:text-slate-700">/</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    {userRole === 'desenvolvedor'
+                      ? `Visualizar Tela: ${activeScreen?.name || ''}`
+                      : (activeScreen ? `Editar Tela: ${activeScreen.name}` : 'Adicionar Tela')}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Back Button (Voltar para Lista) */}
+            {(currentView === 'edit' || currentView === 'view') && (
+              <button
+                onClick={() => setCurrentView('home')}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                Voltar para Lista
+              </button>
             )}
           </nav>
         )}
@@ -748,31 +761,23 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* Load Spec Selector & Back Button */}
-                <div className="flex items-center gap-3 self-start md:self-auto flex-wrap">
-                  <button
-                    onClick={() => setCurrentView('home')}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                {/* Load Spec Selector */}
+                <div className="flex items-center gap-2 self-start md:self-auto">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-455">
+                    Carregar Especificação:
+                  </label>
+                  <select
+                    value={selectedScreenId}
+                    onChange={(e) => loadScreenData(e.target.value)}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-900"
                   >
-                    Voltar para Lista
-                  </button>
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-slate-455">
-                      Carregar Especificação:
-                    </label>
-                    <select
-                      value={selectedScreenId}
-                      onChange={(e) => loadScreenData(e.target.value)}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-900"
-                    >
-                      <option value="">-- Nova Especificação --</option>
-                      {screensList.map((screen) => (
-                        <option key={screen.id} value={screen.id}>
-                          {screen.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    <option value="">-- Nova Especificação --</option>
+                    {screensList.map((screen) => (
+                      <option key={screen.id} value={screen.id}>
+                        {screen.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               
