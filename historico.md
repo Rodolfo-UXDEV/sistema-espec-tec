@@ -236,9 +236,14 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
   - Integração do novo componente no roteamento de `screen-editor` dentro de [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para o papel de `desenvolvedor`.
   - Verificação e compilação do projeto com sucesso via Vite.
 
+### Sessão 26: Simplificação Visual do Cabeçalho Global (26/06/2026)
+- **Objetivo**: Remover a seção de abas de navegação (Editar/Visualizar Especificação) e a indicação de "Ambiente Local" de todo o site, conforme a solicitação visual do usuário.
+- **Entregas**:
+  - Modificação do componente [Header.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/Header.jsx) para remover os botões de abas de navegação e o bloco indicador de status de ambiente.
+  - Verificação e compilação do projeto com sucesso via Vite.
+
 ---
 
 ## Próximos Passos
 1. **Ativar RLS (Row Level Security)**: Conversar com o usuário sobre a ativação do RLS nas tabelas do Supabase para garantir a segurança dos dados em produção.
 2. **Exportação de Especificações**: Implementar a funcionalidade para exportar especificações em Markdown ou PDF.
-
