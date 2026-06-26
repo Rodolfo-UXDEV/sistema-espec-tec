@@ -1,10 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
 export default function ScreenReadOnlyView({ screen, onBack }) {
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [activeTab, setActiveTab] = useState('general'); // 'general', 'fields', 'services'
+  const [localComponents, setLocalComponents] = useState([]);
 
-  const components = screen && screen.components ? screen.components : [];
+  useEffect(() => {
+    if (screen && screen.components) {
+      setLocalComponents(screen.components);
+    } else {
+      setLocalComponents([]);
+    }
+  }, [screen]);
+
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  const handleToggleStatus = async () => {
+    if (!selectedComponent) return;
+    const newStatus = selectedComponent.status === 'concluido' ? 'não desenvolvido' : 'concluido';
+    
+    // Criamos o item de auditoria
+    const changeLogItem = {
+      timestamp: new Date().toISOString(),
+      old_status: selectedComponent.status || 'não desenvolvido',
+      new_status: newStatus,
+      user: 'Desenvolvedor'
+    };
+
+    const newHistory = [
+      ...(selectedComponent.change_history || []),
+      changeLogItem
+    ];
+
+    setIsUpdatingStatus(true);
+    try {
+      const newDescriptionJSON = JSON.stringify({
+        parent_screen_id: selectedComponent.parentScreenId,
+        description: selectedComponent.description,
+        status: newStatus,
+        change_history: newHistory
+      });
+
+      const { error } = await supabase
+        .from('components')
+        .update({ description: newDescriptionJSON })
+        .eq('id', selectedComponent.id);
+
+      if (error) throw error;
+
+      // Update states
+      const updated = localComponents.map(c => 
+        c.id === selectedComponent.id ? { ...c, status: newStatus, change_history: newHistory } : c
+      );
+      setLocalComponents(updated);
+      setSelectedComponent(prev => ({ ...prev, status: newStatus, change_history: newHistory }));
+    } catch (err) {
+      alert('Erro ao atualizar o status de desenvolvimento: ' + err.message);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const totalComponents = localComponents.length;
+  const completedComponents = localComponents.filter(c => c.status === 'concluido').length;
+  const completionPercentage = totalComponents > 0 
+    ? Math.round((completedComponents / totalComponents) * 100) 
+    : 0;
 
   return (
     <div className="w-full space-y-8 animate-fade-in">
@@ -28,13 +90,37 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
 
       {/* Screen Info Card */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-6">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
-            Nome da Tela
-          </span>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-            {screen ? screen.name : ''}
-          </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
+              Nome da Tela
+            </span>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+              {screen ? screen.name : ''}
+            </h2>
+          </div>
+          <div className="sm:text-right">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
+              Porcentagem de Desenvolvimento
+            </span>
+            <div className="flex items-center gap-3 sm:justify-end">
+              <span className={`text-lg font-extrabold ${
+                completionPercentage === 100 
+                  ? 'text-green-600 dark:text-green-400' 
+                  : 'text-indigo-650 dark:text-indigo-400'
+              }`}>
+                {completionPercentage}%
+              </span>
+              <div className="w-24 bg-slate-100 dark:bg-slate-850 h-2 rounded-full overflow-hidden shadow-inner hidden xs:block">
+                <div 
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    completionPercentage === 100 ? 'bg-green-500' : 'bg-indigo-600'
+                  }`}
+                  style={{ width: `${completionPercentage}%` }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Screen Mockup/Image */}
@@ -83,7 +169,7 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
           </p>
         </div>
 
-        {components.length === 0 ? (
+        {localComponents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 text-slate-400 dark:bg-slate-800">
               <svg className="h-6 w-6 text-slate-500 dark:text-slate-450" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,15 +182,32 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {components.map((comp, index) => (
+            {localComponents.map((comp, index) => (
               <div
                 key={comp.id}
                 onClick={() => {
                   setSelectedComponent(comp);
                   setActiveTab('general');
                 }}
-                className="group flex cursor-pointer flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-950"
+                className={`relative group flex cursor-pointer flex-col rounded-2xl border bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md dark:bg-slate-900/60 ${
+                  comp.status === 'concluido'
+                    ? 'border-green-500 hover:border-green-600 dark:border-green-900 dark:hover:border-green-800'
+                    : 'border-red-500 hover:border-red-600 dark:border-red-900 dark:hover:border-red-800'
+                }`}
               >
+                {/* Status tag */}
+                <div className="absolute top-3 right-3 z-10">
+                  {comp.status === 'concluido' ? (
+                    <span className="inline-flex rounded-full bg-green-50 px-2.5 py-0.5 text-[9px] font-bold text-green-600 dark:bg-green-950/30 dark:text-green-400 border border-green-200 dark:border-green-800/40">
+                      concluido
+                    </span>
+                  ) : (
+                    <span className="inline-flex rounded-full bg-red-50 px-2.5 py-0.5 text-[9px] font-bold text-red-600 dark:bg-red-950/30 dark:text-red-400 border border-red-200 dark:border-red-800/40">
+                      não desenvolvido
+                    </span>
+                  )}
+                </div>
+
                 {/* Component photo */}
                 {comp.image ? (
                   <div className="flex h-[150px] items-center justify-center rounded-xl bg-slate-50 p-2 dark:bg-slate-950/40 overflow-hidden border border-slate-100/50 dark:border-slate-800/40">
@@ -176,9 +279,20 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
-              <h3 className="font-display text-lg font-bold text-slate-800 dark:text-white">
-                Detalhes do Componente: {selectedComponent.name}
-              </h3>
+              <div className="flex items-center gap-3">
+                <h3 className="font-display text-lg font-bold text-slate-800 dark:text-white">
+                  Detalhes do Componente: {selectedComponent.name}
+                </h3>
+                {selectedComponent.status === 'concluido' ? (
+                  <span className="inline-flex rounded-full bg-green-50 px-2.5 py-0.5 text-[10px] font-bold text-green-700 dark:bg-green-950/30 dark:text-green-400 border border-green-200 dark:border-green-800/40">
+                    concluido
+                  </span>
+                ) : (
+                  <span className="inline-flex rounded-full bg-red-50 px-2.5 py-0.5 text-[10px] font-bold text-red-750 dark:bg-red-950/30 dark:text-red-400 border border-red-200 dark:border-red-800/40">
+                    não desenvolvido
+                  </span>
+                )}
+              </div>
               <button
                 onClick={() => setSelectedComponent(null)}
                 className="rounded-full p-1.5 text-slate-450 hover:bg-slate-100 active:scale-90 transition-all dark:text-slate-500 dark:hover:bg-slate-800 cursor-pointer"
@@ -253,16 +367,52 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
               {/* Tab Panels */}
               <div className="animate-fade-in">
                 {activeTab === 'general' && (
-                  <div className="space-y-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
-                      Descrição do Componente
-                    </span>
-                    <div className="rounded-2xl bg-slate-50/40 dark:bg-slate-955/10 p-5 border border-slate-150 dark:border-slate-800/60 min-h-[120px]">
-                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                        {selectedComponent.description || (
-                          <span className="italic text-slate-400">Sem descrição fornecida.</span>
-                        )}
-                      </p>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+                        Descrição do Componente
+                      </span>
+                      <div className="rounded-2xl bg-slate-50/40 dark:bg-slate-955/10 p-5 border border-slate-150 dark:border-slate-800/60 min-h-[120px]">
+                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                          {selectedComponent.description || (
+                            <span className="italic text-slate-400">Sem descrição fornecida.</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Histórico de Alterações de Desenvolvimento */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+                        Histórico de Alterações de Desenvolvimento
+                      </span>
+                      {!selectedComponent.change_history || selectedComponent.change_history.length === 0 ? (
+                        <div className="rounded-2xl bg-slate-50/20 dark:bg-slate-955/10 p-4 border border-slate-150 dark:border-slate-800/40 text-xs text-slate-400 italic">
+                          Nenhum registro de alteração para este componente.
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl border border-slate-150 bg-white p-4 dark:border-slate-800 dark:bg-slate-955/10 max-h-[220px] overflow-y-auto space-y-3">
+                          {selectedComponent.change_history.slice().reverse().map((log, logIdx) => (
+                            <div key={logIdx} className="flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-1 border-b border-slate-100 dark:border-slate-800 pb-2 last:border-0 last:pb-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase border ${
+                                  log.new_status === 'concluido'
+                                    ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800/40'
+                                    : 'bg-red-50 text-red-655 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800/40'
+                                }`}>
+                                  {log.new_status}
+                                </span>
+                                <span className="text-slate-600 dark:text-slate-300 font-medium">
+                                  Alterado por {log.user || 'Desenvolvedor'}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                                {new Date(log.timestamp).toLocaleString('pt-BR')}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -382,7 +532,30 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end border-t border-slate-100 px-6 py-4 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+            <div className="flex justify-end items-center gap-3 border-t border-slate-100 px-6 py-4 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+              <button
+                disabled={isUpdatingStatus}
+                onClick={handleToggleStatus}
+                className={`rounded-xl px-5 py-2 text-xs font-bold shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer ${
+                  selectedComponent.status === 'concluido'
+                    ? 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
+                    : 'bg-green-600 hover:bg-green-700 text-white dark:bg-green-650 dark:hover:bg-green-750'
+                }`}
+              >
+                {isUpdatingStatus ? (
+                  <span className="flex items-center gap-1.5">
+                    <svg className="animate-spin h-3.5 w-3.5 text-current" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Processando...
+                  </span>
+                ) : selectedComponent.status === 'concluido' ? (
+                  'Marcar como não desenvolvido'
+                ) : (
+                  'Desenvolvimento concluído'
+                )}
+              </button>
               <button
                 onClick={() => setSelectedComponent(null)}
                 className="rounded-xl border border-slate-200 bg-white px-5 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"

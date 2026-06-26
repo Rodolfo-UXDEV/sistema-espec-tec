@@ -446,6 +446,23 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
 
 ---
 
+### Sessão 28: Sistema de Marcação de Desenvolvimento nos Componentes e Histórico de Alterações (26/06/2026)
+- **Objetivo**: Criar o status de conclusão de desenvolvimento por componente para o papel de desenvolvedor, persistindo-o no Supabase junto a um histórico completo de alterações (log de auditoria).
+- **Entregas**:
+  - Atualização de [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para decodificar e codificar o status de desenvolvimento (`status`) e o histórico de alterações (`change_history`) a partir do JSON serializado no campo `description` dos componentes no Supabase, garantindo que o analista preserve essas informações ao salvar especificações.
+  - Atualização de [ScreenEditor.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx) para realizar mesclagem de objetos (`{ ...c, ...savedComp }`) ao salvar componentes no estado local do analista, blindando o status e histórico de auditoria contra perdas acidentais de metadados.
+  - Atualização de [ScreenReadOnlyView.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx) para:
+    - Usar estado reativo para os componentes da tela.
+    - Calcular dinamicamente a porcentagem geral de conclusão do desenvolvimento da tela com base nos componentes.
+    - Reestruturar o container do nome da tela para flexbox de duas colunas, posicionando à direita (extremidade oposta) a porcentagem e uma elegante barra de progresso horizontal correspondente.
+    - Exibir borda verde (`border-green-500`) e tag verde `"concluido"` nos cards da listagem se o status do componente for `'concluido'`.
+    - Apresentar a tag de status correspondente no cabeçalho da modal de detalhes.
+    - Disponibilizar botão "Desenvolvimento concluído" / "Marcar como não desenvolvido" no rodapé da modal, gerando registros de auditoria com data, hora e autor e atualizando o Supabase.
+    - Renderizar a seção "Histórico de Alterações de Desenvolvimento" na aba "Geral" da modal ordenando do log mais recente para o mais antigo.
+  - Verificação e compilação do projeto com sucesso via Vite.
+
+---
+
 ## Próximos Passos
 1. **Ativar RLS (Row Level Security)**: Conversar com o usuário sobre a ativação do RLS nas tabelas do Supabase para garantir a segurança dos dados em produção.
 2. **Exportação de Especificações**: Implementar a funcionalidade para exportar especificações em Markdown ou PDF.

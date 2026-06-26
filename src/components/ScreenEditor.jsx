@@ -55,7 +55,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
   const handleSaveComponent = (savedComp) => {
     const exists = components.some((c) => c.id === savedComp.id);
     if (exists) {
-      setComponents(components.map((c) => (c.id === savedComp.id ? savedComp : c)));
+      setComponents(components.map((c) => (c.id === savedComp.id ? { ...c, ...savedComp } : c)));
     } else {
       setComponents([...components, savedComp]);
     }

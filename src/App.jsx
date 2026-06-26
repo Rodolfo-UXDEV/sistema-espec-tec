@@ -157,12 +157,16 @@ export default function App() {
       const parsedComponents = compsData.map(comp => {
         let parentScreenId = null;
         let actualDescription = comp.description || '';
+        let status = 'não desenvolvido';
+        let change_history = [];
         try {
           if (comp.description && comp.description.trim().startsWith('{')) {
             const parsed = JSON.parse(comp.description);
             if (parsed && parsed.parent_screen_id) {
               parentScreenId = parsed.parent_screen_id;
               actualDescription = parsed.description || '';
+              status = parsed.status || 'não desenvolvido';
+              change_history = parsed.change_history || [];
             }
           }
         } catch (e) {
@@ -173,6 +177,8 @@ export default function App() {
           name: comp.name,
           parentScreenId,
           description: actualDescription,
+          status,
+          change_history,
           image: comp.image_url,
           fields: [],
           services: []
@@ -370,7 +376,12 @@ export default function App() {
             .insert({
               screen_id: screenId,
               name: comp.name,
-              description: JSON.stringify({ parent_screen_id: newScreenParentId, description: comp.description }),
+              description: JSON.stringify({ 
+                parent_screen_id: newScreenParentId, 
+                description: comp.description,
+                status: comp.status || 'não desenvolvido',
+                change_history: comp.change_history || []
+              }),
               image_url: comp.image,
             })
             .select()
