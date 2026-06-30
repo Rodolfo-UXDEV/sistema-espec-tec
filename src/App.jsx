@@ -9,6 +9,7 @@ import FlowsGallery from './components/FlowsGallery';
 import ScreenEditor from './components/ScreenEditor';
 import ScreenReadOnlyView from './components/ScreenReadOnlyView';
 import LandingPage from './components/LandingPage';
+import EvidenceModal from './components/EvidenceModal';
 import { supabase } from './supabaseClient';
 import './App.css';
 
@@ -50,6 +51,16 @@ export default function App() {
     }
   });
 
+  // Spec criteria states
+  const [specCriteria, setSpecCriteria] = useState([]);
+  const [specCriteriaMap, setSpecCriteriaMap] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('spec_criteria') || '{}');
+    } catch {
+      return {};
+    }
+  });
+
   // Archive state (localStorage)
   const [archivedIds, setArchivedIds] = useState(() => {
     try {
@@ -63,7 +74,10 @@ export default function App() {
     localStorage.setItem('archived_specs', JSON.stringify(archivedIds));
   }, [archivedIds]);
 
-  // No modal states needed in App.jsx (managed inside ScreenEditor)
+  // Evidence Modal states
+  const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false);
+  const [evidenceModalMode, setEvidenceModalMode] = useState('edit'); // 'edit' or 'view'
+  const [activeCriterionIndex, setActiveCriterionIndex] = useState(null);
 
   // Fetch screens on mount
   useEffect(() => {
@@ -101,6 +115,7 @@ export default function App() {
       setImage(null);
       setSpecFlows([]);
       setSpecDescription('');
+      setSpecCriteria([]);
       setDetails([]);
       setSelectedScreenId('');
       return;
@@ -139,6 +154,20 @@ export default function App() {
       // Load description
       const storedDescriptions = JSON.parse(localStorage.getItem('spec_descriptions') || '{}');
       setSpecDescription(storedDescriptions[id] || '');
+
+      // Load criteria
+      if (screenData.criteria) {
+        try {
+          setSpecCriteria(JSON.parse(screenData.criteria));
+        } catch (e) {
+          console.error("Erro ao fazer parse dos critérios do Supabase:", e);
+          const storedCriteria = JSON.parse(localStorage.getItem('spec_criteria') || '{}');
+          setSpecCriteria(storedCriteria[id] || []);
+        }
+      } else {
+        const storedCriteria = JSON.parse(localStorage.getItem('spec_criteria') || '{}');
+        setSpecCriteria(storedCriteria[id] || []);
+      }
 
       // 2. Fetch components (both parent screens and child components)
       const { data: compsData, error: compsErr } = await supabase
@@ -473,7 +502,7 @@ export default function App() {
         // Update screen
         const { error: updateErr } = await supabase
           .from('screens')
-          .update({ name: screenName, image_url: imageValue })
+          .update({ name: screenName, image_url: imageValue, criteria: JSON.stringify(specCriteria) })
           .eq('id', screenId);
         
         if (updateErr) throw updateErr;
@@ -489,7 +518,7 @@ export default function App() {
           screenId = existingScreen.id;
           const { error: updateErr } = await supabase
             .from('screens')
-            .update({ image_url: imageValue })
+            .update({ image_url: imageValue, criteria: JSON.stringify(specCriteria) })
             .eq('id', screenId);
           
           if (updateErr) throw updateErr;
@@ -497,7 +526,7 @@ export default function App() {
           // Insert new screen
           const { data: newScreen, error: insertErr } = await supabase
             .from('screens')
-            .insert({ name: screenName, image_url: imageValue })
+            .insert({ name: screenName, image_url: imageValue, criteria: JSON.stringify(specCriteria) })
             .select()
             .single();
           
@@ -519,6 +548,11 @@ export default function App() {
       const updatedDescriptions = { ...specDescriptions, [screenId]: specDescription };
       setSpecDescriptions(updatedDescriptions);
       localStorage.setItem('spec_descriptions', JSON.stringify(updatedDescriptions));
+
+      // Save criteria mapping
+      const updatedCriteria = { ...specCriteriaMap, [screenId]: specCriteria };
+      setSpecCriteriaMap(updatedCriteria);
+      localStorage.setItem('spec_criteria', JSON.stringify(updatedCriteria));
 
       // 2. Clean up existing components for this screen to perform a full overwrite
       const { error: deleteCompsErr } = await supabase
@@ -611,6 +645,396 @@ export default function App() {
     }
   };
 
+  const handleAddCriterion = () => {
+    const nextNum = specCriteria.length + 1;
+    const newCriterion = {
+      id: `new-${Date.now()}-${Math.random()}`,
+      customId: `CA-${String(nextNum).padStart(2, '0')}`,
+      criterion: '',
+      status: 'Pendente',
+      responsible: '',
+      evidence: ''
+    };
+    setSpecCriteria([...specCriteria, newCriterion]);
+  };
+
+  const handleUpdateCriterion = (index, field, value) => {
+    setSpecCriteria(prev => prev.map((item, idx) => {
+      if (idx === index) {
+        return { ...item, [field]: value };
+      }
+      return item;
+    }));
+  };
+
+  const handleRemoveCriterion = (index) => {
+    setSpecCriteria(prev => {
+      const filtered = prev.filter((_, idx) => idx !== index);
+      return filtered.map((item, idx) => {
+        if (item.customId.startsWith('CA-')) {
+          return { ...item, customId: `CA-${String(idx + 1).padStart(2, '0')}` };
+        }
+        return item;
+      });
+    });
+  };
+
+  const handleOpenRegisterEvidence = (index) => {
+    setActiveCriterionIndex(index);
+    setEvidenceModalMode('edit');
+    setIsEvidenceModalOpen(true);
+  };
+
+  const handleOpenViewEvidence = (index) => {
+    setActiveCriterionIndex(index);
+    setEvidenceModalMode('view');
+    setIsEvidenceModalOpen(true);
+  };
+
+  const handleSaveEvidence = (evidenceValue) => {
+    if (activeCriterionIndex !== null) {
+      handleUpdateCriterion(activeCriterionIndex, 'evidence', evidenceValue);
+    }
+    setIsEvidenceModalOpen(false);
+  };
+
+  const handleExportPDF = () => {
+    if (!screenName.trim()) {
+      alert('Por favor, defina o nome da especificação primeiro.');
+      return;
+    }
+
+    const downloadPDF = () => {
+      const author = selectedScreenId
+        ? specAuthors[selectedScreenId] || 'Rodolfo Rodrigues'
+        : pendingAuthor || 'Rodolfo Rodrigues';
+
+      const rawDate = selectedScreenId
+        ? screensList.find((s) => s.id === selectedScreenId)?.created_at
+        : null;
+      const dateStr = rawDate
+        ? new Date(rawDate).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : new Date().toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+
+      // Construct HTML Content for PDF
+      let htmlContent = `
+        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #1e293b; line-height: 1.5; padding: 20px; font-size: 14px;">
+          <style>
+            h1, h2, h3, h4 { color: #0f172a; font-weight: 700; margin-top: 0; }
+            h1 { font-size: 28px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+            h2 { font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 30px; margin-bottom: 14px; }
+            h3 { font-size: 15px; margin-top: 20px; margin-bottom: 10px; color: #1e1b4b; }
+            .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; }
+            .meta-item { font-size: 12px; }
+            .meta-label { font-weight: 700; text-transform: uppercase; font-size: 10px; color: #64748b; margin-bottom: 2px; }
+            .meta-value { font-weight: 500; color: #334155; }
+            .section { margin-bottom: 24px; }
+            .section p { margin: 0 0 12px 0; white-space: pre-wrap; }
+            .image-gallery { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+            .image-gallery img { max-width: 100%; max-height: 200px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 6px; padding: 3px; background-color: #f8fafc; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 12px; }
+            th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+            th { background-color: #f1f5f9; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 10px; }
+            .badge { display: inline-block; padding: 2px 6px; border-radius: 9999px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+            .badge-pendente { background-color: #fef3c7; color: #d97706; }
+            .badge-emdesenvolvimento { background-color: #dbeafe; color: #2563eb; }
+            .badge-concluído, .badge-concluido { background-color: #dcfce7; color: #16a34a; }
+            .badge-bloqueado { background-color: #fee2e2; color: #dc2626; }
+            .page-break { page-break-before: always; }
+            .avoid-break { page-break-inside: avoid; }
+          </style>
+          
+          <h1>Especificação Técnica</h1>
+          
+          <div class="meta-grid">
+            <div class="meta-item">
+              <div class="meta-label">Nome da Especificação</div>
+              <div class="meta-value">${screenName}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Autor</div>
+              <div class="meta-value">${author}</div>
+            </div>
+            <div class="meta-item" style="grid-column: span 2;">
+              <div class="meta-label">Data de Criação</div>
+              <div class="meta-value">${dateStr}</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Descrição Geral</h2>
+            <p>${specDescription || 'Sem descrição cadastrada.'}</p>
+          </div>
+      `;
+
+      if (specFlows && specFlows.length > 0) {
+        htmlContent += `
+          <div class="section avoid-break">
+            <h2>Fluxos Propostos</h2>
+            <div class="image-gallery">
+              ${specFlows.map((flow) => `<img src="${flow}" alt="Fluxo Proposto">`).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      htmlContent += `
+        <div class="section avoid-break">
+          <h2>Critérios de Aceite</h2>
+          ${
+            specCriteria.length === 0
+              ? '<p>Nenhum critério de aceite cadastrado.</p>'
+              : `
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width: 12%;">ID</th>
+                    <th style="width: 43%;">CRITÉRIO</th>
+                    <th style="width: 15%;">STATUS</th>
+                    <th style="width: 15%;">RESPONSÁVEL</th>
+                    <th style="width: 15%;">EVIDÊNCIA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${specCriteria
+                    .map(
+                      (c) => `
+                    <tr>
+                      <td><strong>${c.customId || ''}</strong></td>
+                      <td>${c.criterion || ''}</td>
+                      <td>
+                        <span class="badge badge-${(c.status || 'Pendente')
+                          .toLowerCase()
+                          .replace(/\s+/g, '')}">${c.status || 'Pendente'}</span>
+                      </td>
+                      <td>${c.responsible || ''}</td>
+                      <td>${(() => {
+                        if (!c.evidence) return '-';
+                        try {
+                          if (c.evidence.startsWith('{')) {
+                            const parsed = JSON.parse(c.evidence);
+                            let content = parsed.description || '';
+                            if (parsed.image) {
+                              content += `<div style="margin-top: 5px;"><img src="${parsed.image}" style="max-height: 60px; max-width: 100%; border-radius: 4px; border: 1px solid #e2e8f0;"/></div>`;
+                            }
+                            return content || '-';
+                          }
+                          return c.evidence;
+                        } catch (e) {
+                          return c.evidence;
+                        }
+                      })()}</td>
+                    </tr>
+                  `
+                    )
+                    .join('')}
+                </tbody>
+              </table>
+            `
+          }
+        </div>
+      `;
+
+      if (details && details.length > 0) {
+        htmlContent += `<h2>Detalhamento das Telas</h2>`;
+        
+        details.forEach((screen, screenIndex) => {
+          htmlContent += `
+            <div class="section page-break">
+              <h3 style="font-size: 18px; border-bottom: 2px solid #818cf8; padding-bottom: 5px; margin-bottom: 12px;">
+                Tela ${screenIndex + 1}: ${screen.name}
+              </h3>
+              <p><strong>Descrição da Tela:</strong> ${screen.description || 'Sem descrição cadastrada.'}</p>
+          `;
+
+          if (screen.image) {
+            htmlContent += `
+              <div style="margin-bottom: 20px;" class="avoid-break">
+                <strong>Mock-up da Tela:</strong><br/>
+                <img src="${screen.image}" alt="${screen.name}" style="max-width: 100%; max-height: 300px; margin-top: 8px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px;">
+              </div>
+            `;
+          }
+
+          if (screen.components && screen.components.length > 0) {
+            htmlContent += `<h4>Componentes da Tela</h4>`;
+            
+            screen.components.forEach((comp) => {
+              htmlContent += `
+                <div style="margin-bottom: 24px; padding: 12px; border: 1px dashed #cbd5e1; border-radius: 8px; background-color: #fafafa;" class="avoid-break">
+                  <h5 style="font-size: 13px; margin: 0 0 6px 0; color: #1e1b4b; font-weight: 700;">
+                    Componente: ${comp.name}
+                  </h5>
+                  <p style="font-size: 12px; margin-bottom: 10px;"><strong>Descrição:</strong> ${comp.description || 'Sem descrição.'}</p>
+              `;
+
+              if (comp.image) {
+                htmlContent += `
+                  <div style="margin-bottom: 12px;">
+                    <img src="${comp.image}" alt="${comp.name}" style="max-height: 120px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                  </div>
+                `;
+              }
+
+              if (comp.fields && comp.fields.length > 0) {
+                htmlContent += `
+                  <div style="margin-top: 10px;">
+                    <strong style="font-size: 10px; text-transform: uppercase; color: #64748b;">Campos e Validações</strong>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th style="width: 20%;">Nome do Campo</th>
+                          <th style="width: 30%;">Descrição</th>
+                          <th style="width: 10%; text-align: center;">Obrigatório</th>
+                          <th style="width: 15%;">Formato</th>
+                          <th style="width: 25%;">Regras de Validação</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${comp.fields
+                          .map(
+                            (f) => `
+                          <tr>
+                            <td><strong>${f.fieldName || ''}</strong></td>
+                            <td>${f.description || ''}</td>
+                            <td style="text-align: center;">${f.required ? 'Sim' : 'Não'}</td>
+                            <td>${f.format || ''}</td>
+                            <td>${f.validationRules || ''}</td>
+                          </tr>
+                        `
+                          )
+                          .join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                `;
+              }
+
+              if (comp.services && comp.services.length > 0) {
+                htmlContent += `
+                  <div style="margin-top: 10px;">
+                    <strong style="font-size: 10px; text-transform: uppercase; color: #64748b;">Serviços de Integração</strong>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th style="width: 10%;">ID</th>
+                          <th style="width: 15%;">Método / Tipo</th>
+                          <th style="width: 30%;">Endpoint / Tópico / Arquivo</th>
+                          <th style="width: 25%;">Descrição</th>
+                          <th style="width: 10%;">Request</th>
+                          <th style="width: 10%;">Response</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${comp.services
+                          .map(
+                            (s) => `
+                          <tr>
+                            <td><strong>${s.serviceId || ''}</strong></td>
+                            <td>${s.method || ''}</td>
+                            <td style="word-break: break-all;">${s.endpoint || ''}</td>
+                            <td>${s.description || ''}</td>
+                            <td>${s.request ? 'Sim' : 'Não'}</td>
+                            <td>${s.response ? 'Sim' : 'Não'}</td>
+                          </tr>
+                        `
+                          )
+                          .join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                `;
+              }
+
+              htmlContent += `</div>`;
+            });
+          }
+
+          htmlContent += `</div>`;
+        });
+      }
+
+      htmlContent += `</div>`;
+
+      // Create a wrapper that is fixed and hidden behind everything
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'fixed';
+      wrapper.style.top = '0';
+      wrapper.style.left = '0';
+      wrapper.style.width = '800px';
+      wrapper.style.height = '1px';
+      wrapper.style.overflow = 'hidden';
+      wrapper.style.zIndex = '-9999';
+      wrapper.style.opacity = '0.01';
+      
+      // Create the content container that we pass to html2pdf (no positioning inline style!)
+      const tempContainer = document.createElement('div');
+      tempContainer.style.width = '800px';
+      tempContainer.style.backgroundColor = '#ffffff';
+      tempContainer.innerHTML = htmlContent;
+      
+      wrapper.appendChild(tempContainer);
+      document.body.appendChild(wrapper);
+
+      // Wait for all images in the container to load
+      const images = tempContainer.getElementsByTagName('img');
+      const promises = Array.from(images).map((img) => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve; // resolve anyway on error to avoid blocking forever
+        });
+      });
+
+      Promise.all(promises).then(() => {
+        const filename = `Especificacao_Tecnica_${screenName.trim().replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+        const options = {
+          margin: 10,
+          filename: filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css'] }
+        };
+
+        window.html2pdf()
+          .set(options)
+          .from(tempContainer)
+          .save()
+          .then(() => {
+            document.body.removeChild(wrapper);
+          })
+          .catch((err) => {
+            console.error('Erro ao gerar PDF:', err);
+            document.body.removeChild(wrapper);
+          });
+      });
+    };
+
+    // Load html2pdf dynamically if it is not present in window
+    if (!window.html2pdf) {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = downloadPDF;
+      script.onerror = () => alert('Erro ao carregar biblioteca de exportação de PDF. Verifique sua conexão.');
+      document.body.appendChild(script);
+    } else {
+      downloadPDF();
+    }
+  };
+
   const handleArchive = (id) => {
     setArchivedIds((prev) => [...prev, id]);
   };
@@ -635,6 +1059,9 @@ export default function App() {
     setDetails([]);
     setSelectedScreenId('');
     setPendingAuthor(author);
+    setSpecFlows([]);
+    setSpecDescription('');
+    setSpecCriteria([]);
     setCurrentView('edit');
   };
 
@@ -892,13 +1319,185 @@ export default function App() {
                   onEditClick={handleEditClick}
                   onDeleteClick={handleDeleteClick}
                 />
+
+                {/* Critérios de Aceite */}
+                <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+                    <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
+                      Critérios de Aceite
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={handleAddCriterion}
+                      className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow active:scale-95 duration-200 cursor-pointer"
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                      Adicionar critério
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                    <table className="w-full min-w-[900px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+                      <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        <tr>
+                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[12%]">ID</th>
+                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[43%]">CRITÉRIO</th>
+                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">STATUS</th>
+                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">RESPONSÁVEL</th>
+                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">EVIDÊNCIA</th>
+                          <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-left w-[5%]">AÇÕES</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-850 bg-white dark:bg-slate-900">
+                        {specCriteria.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">
+                              Nenhum critério de aceite cadastrado. Clique em "+ Adicionar critério" para começar.
+                            </td>
+                          </tr>
+                        ) : (
+                          specCriteria.map((criterion, index) => (
+                            <tr key={criterion.id || index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                              <td className="px-3 py-2">
+                                <input
+                                  type="text"
+                                  value={criterion.customId || ''}
+                                  onChange={(e) => handleUpdateCriterion(index, 'customId', e.target.value)}
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <textarea
+                                  value={criterion.criterion || ''}
+                                  onChange={(e) => handleUpdateCriterion(index, 'criterion', e.target.value)}
+                                  rows={1}
+                                  placeholder="Ex: O botão de login deve ficar desabilitado até preencher..."
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200 resize-y"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <select
+                                  value={criterion.status || 'Pendente'}
+                                  onChange={(e) => handleUpdateCriterion(index, 'status', e.target.value)}
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+                                >
+                                  <option value="Pendente">Pendente</option>
+                                  <option value="Em Desenvolvimento">Em Desenvolvimento</option>
+                                  <option value="Concluído">Concluído</option>
+                                  <option value="Bloqueado">Bloqueado</option>
+                                </select>
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="text"
+                                  value={criterion.responsible || ''}
+                                  onChange={(e) => handleUpdateCriterion(index, 'responsible', e.target.value)}
+                                  placeholder="Responsável..."
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="flex items-center justify-start gap-1.5">
+                                  {/* Visualizar Evidência */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (criterion.evidence && criterion.evidence.trim()) {
+                                        handleOpenViewEvidence(index);
+                                      }
+                                    }}
+                                    disabled={!criterion.evidence || !criterion.evidence.trim()}
+                                    className={`p-1.5 rounded-lg transition-all active:scale-90 ${
+                                      criterion.evidence && criterion.evidence.trim()
+                                        ? "text-indigo-655 hover:bg-indigo-50 hover:text-indigo-750 dark:text-indigo-400 dark:hover:bg-indigo-950/40 cursor-pointer"
+                                        : "text-slate-300 dark:text-slate-750 cursor-not-allowed"
+                                    }`}
+                                    title="Visualizar Evidência"
+                                  >
+                                    <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                  </button>
+
+                                  {/* Cadastrar Evidência */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenRegisterEvidence(index)}
+                                    className={`p-1.5 rounded-lg transition-all active:scale-90 cursor-pointer ${
+                                      criterion.evidence && criterion.evidence.trim()
+                                        ? "text-emerald-655 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/40"
+                                        : "text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-450 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                    }`}
+                                    title="Cadastrar / Editar Evidência"
+                                  >
+                                    <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m-9 1V4a2 2 0 012-2h6l2 2h7a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 text-left">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveCriterion(index)}
+                                  className="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg transition-colors cursor-pointer"
+                                  title="Remover critério"
+                                >
+                                  <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
                 
-                {/* Action button to save to Supabase */}
-                <div className="flex justify-end pt-4">
+                {/* Action buttons */}
+                <div className="flex justify-end items-center gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={handleExportPDF}
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 font-semibold text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 active:scale-98 transition-all dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-850 cursor-pointer"
+                  >
+                    <svg
+                      className="h-5 w-5 text-slate-500 dark:text-slate-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                      />
+                    </svg>
+                    Gerar PDF
+                  </button>
+
                   <button
                     onClick={handleSaveAllToSupabase}
                     disabled={isSaving}
-                    className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-100 hover:from-indigo-600 hover:to-violet-700 active:scale-98 transition-all disabled:opacity-50 dark:shadow-none"
+                    className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-100 hover:from-indigo-600 hover:to-violet-700 active:scale-98 transition-all disabled:opacity-50 dark:shadow-none cursor-pointer"
                   >
                     {isSaving ? (
                       <>
@@ -960,7 +1559,15 @@ export default function App() {
           </div>
         </div>
       )}
+
+      <EvidenceModal
+        isOpen={isEvidenceModalOpen}
+        onClose={() => setIsEvidenceModalOpen(false)}
+        onSave={handleSaveEvidence}
+        evidence={activeCriterionIndex !== null ? specCriteria[activeCriterionIndex].evidence : ''}
+        criterionId={activeCriterionIndex !== null ? specCriteria[activeCriterionIndex].customId : ''}
+        mode={evidenceModalMode}
+      />
     </div>
   );
-
 }

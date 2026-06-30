@@ -44,6 +44,13 @@ export default function ScreenViewer({
       })
     : '-';
 
+  const totalComponents = details ? details.reduce((acc, screen) => acc + (screen.components ? screen.components.length : 0), 0) : 0;
+  const completedComponents = details ? details.reduce((acc, screen) => {
+    if (!screen.components) return acc;
+    return acc + screen.components.filter(c => c.status === 'concluido').length;
+  }, 0) : 0;
+  const completionPercentage = totalComponents > 0 ? Math.round((completedComponents / totalComponents) * 100) : 0;
+
   return (
     <div className="w-full space-y-8">
       {/* Selection Header */}
@@ -161,11 +168,22 @@ export default function ScreenViewer({
 
           {/* Screens List display */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="h-6 w-1 rounded-full bg-indigo-500"></span>
-              <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
-                Telas da Especificação
-              </h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="h-6 w-1 rounded-full bg-indigo-500"></span>
+                <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
+                  Telas da Especificação
+                </h2>
+              </div>
+              {details && details.length > 0 && (
+                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase border ${
+                  completionPercentage === 100
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-955/20 dark:text-emerald-400 dark:border-emerald-800/40'
+                    : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-955/20 dark:text-rose-400 dark:border-rose-800/40'
+                }`}>
+                  {completionPercentage}% concluída
+                </span>
+              )}
             </div>
 
             {!details || details.length === 0 ? (

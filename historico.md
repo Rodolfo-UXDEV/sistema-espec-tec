@@ -461,8 +461,78 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
     - Renderizar a seção "Histórico de Alterações de Desenvolvimento" na aba "Geral" da modal ordenando do log mais recente para o mais antigo.
   - Verificação e compilação do projeto com sucesso via Vite.
 
+### Sessão 29: Adição de Critérios de Aceite na Edição de Especificações (30/06/2026)
+- **Objetivo**: Adicionar suporte a Critérios de Aceite na tela de edição do Analista.
+- **Entregas**:
+  - Adição do estado `specCriteria` e `specCriteriaMap` em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) com persistência local sob a chave `spec_criteria`.
+  - Criação de funções auxiliares para adição, modificação e remoção sequencial de critérios em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Criação da interface com o bloco "Critérios de Aceite", botão "+ Adicionar critério" e a tabela com as colunas ID, Critério, Status, Responsável e Evidência em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Alinhamento estético e de estilo do título e do botão da seção "Critérios de Aceite" em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para corresponder exatamente ao da seção "Detalhamento das Telas" (incluindo o mesmo ícone SVG de mais (+), cores em bg-indigo-600, hover e transições).
+  - Verificação e compilação do projeto local com sucesso via Vite dev server e verificação de build de produção.
+
+---
+
+### Sessão 30: Exportação de Especificação em PDF (30/06/2026)
+- **Objetivo**: Implementar um botão "Gerar PDF" na tela de edição do Analista para baixar um documento contendo todas as informações da especificação técnica de forma direta (download de arquivo).
+- **Entregas**:
+  - Implementação da função `handleExportPDF` em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) contendo um gerador dinâmico de template HTML/CSS e integração assíncrona da biblioteca `html2pdf.js` via CDN.
+  - Configuração do download direto do arquivo PDF (`save()`), gerando um elemento HTML temporário oculto na memória e convertendo-o sem a abertura de novas janelas ou do diálogo de impressão do navegador.
+  - Inclusão de todos os dados do projeto no template (Título, Autor, Data, Descrição Geral, Galeria de Fluxos, tabela de Critérios de Aceite e detalhamento em cascata de todas as Telas e seus respectivos Componentes com as tabelas de Campos e Serviços).
+  - Adição de regras CSS de impressão para forçar quebras de página inteligentes (`page-break`) e evitar cortes desfavoráveis.
+  - Inclusão do botão "Gerar PDF" no rodapé da página de edição (estilizado ao lado do botão de salvar).
+  - Verificação e compilação do projeto com sucesso no Vite.
+
+---
+
+### Sessão 31: Consolidação da Edição Direta de Critérios na Tabela (30/06/2026)
+- **Objetivo**: Manter e refinar a edição ágil e direta dos Critérios de Aceite na tabela, respeitando as preferências de usabilidade.
+- **Entregas**:
+  - Restauração dos inputs, áreas de texto e seletores dropdown inline diretamente dentro das células da tabela de critérios em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Restauração dos handlers de estado `handleAddCriterion` e `handleUpdateCriterion` para permitir a manipulação rápida na grade sem necessidade de pop-ups ou modais intermediários.
+  - Verificação e compilação do projeto com sucesso no Vite.
+
+---
+
+### Sessão 32: Cadastro e Visualização de Evidências com Imagens (30/06/2026)
+- **Objetivo**: Substituir o campo simples de input de evidência por um sistema completo com visualização e cadastro de imagens e descrições detalhadas.
+- **Entregas**:
+  - Criação do componente [EvidenceModal.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/EvidenceModal.jsx) para upload de imagens (drag-and-drop e file select) e preenchimento de descrições/links, suportando visualização de imagens e descrições formatadas.
+  - Substituição da coluna "Evidência" por dois ícones: **Visualizar Evidência** (ícone de olho, habilitado se houver evidência cadastrada) e **Cadastrar Evidência** (ícone de pasta com mais, estilizado em verde se houver conteúdo).
+  - Ajuste na geração de PDF ([App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx)) para reconhecer dados estruturados de evidência, renderizar a descrição e anexar uma miniatura de imagem diretamente na célula da tabela de critérios de aceite exportada.
+  - Alinhamento de todos os cabeçalhos de coluna e ícones da tabela de critérios (ações de excluir e ícones de evidência) à esquerda, definindo também o título da última coluna como "AÇÕES".
+  - Verificação e compilação do projeto com sucesso no Vite.
+
+---
+
+### Sessão 33: Persistência de Critérios de Aceite no Supabase (30/06/2026)
+- **Objetivo**: Salvar e carregar todos os dados da seção de Critérios de Aceite diretamente no banco de dados do Supabase.
+- **Entregas**:
+  - Execução de migração DDL no Supabase para incluir a coluna `criteria` (tipo TEXT) na tabela `public.screens`.
+  - Atualização do método `handleSaveAllToSupabase` em [App.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para serializar os critérios em JSON e persistir na coluna `criteria` ao inserir ou atualizar uma especificação técnica.
+  - Atualização de `loadScreenData` para recuperar os dados e atualizar o estado local de critérios de aceite de forma assíncrona, caindo de volta para o localStorage caso a coluna de banco esteja nula.
+  - Compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 34: Ajuste no Modal de Detalhes de Componente (30/06/2026)
+- **Objetivo**: Remover a seção "Histórico de Alterações de Desenvolvimento" no modal de detalhes do componente exibido para o Desenvolvedor.
+- **Entregas**:
+  - Remoção da seção de histórico e renderização de logs de alteração na visualização `general` em [ScreenReadOnlyView.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx).
+  - Preservação da descrição geral do componente e abas de campos/serviços sem alterações.
+  - Verificação e compilação do projeto com sucesso no Vite.
+
+---
+
+### Sessão 35: Tag de Percentual de Conclusão na Especificação (30/06/2026)
+- **Objetivo**: Adicionar um indicador visual da porcentagem concluída do projeto (especificação técnica) no perfil do Desenvolvedor.
+- **Entregas**:
+  - Implementação da lógica de cálculo de progresso agregada no componente [ScreenViewer.jsx](file:///c:/Users/RodolfoRodriguesdoNa/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx), calculando a proporção de componentes concluídos frente ao total de componentes da especificação técnica.
+  - Inserção de uma tag estilizada ao lado do título "Telas da Especificação".
+  - Configuração de coloração dinâmica baseada em Tailwind CSS: **Verde** (emerald) caso o progresso seja rigorosamente `100%`, e **Vermelho** (rose) para quaisquer porcentagens inferiores.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
 ---
 
 ## Próximos Passos
 1. **Ativar RLS (Row Level Security)**: Conversar com o usuário sobre a ativação do RLS nas tabelas do Supabase para garantir a segurança dos dados em produção.
-2. **Exportação de Especificações**: Implementar a funcionalidade para exportar especificações em Markdown ou PDF.
+2. **Exportação de Especificações**: Implementar exportação para formato Markdown (PDF concluído na Sessão 30).

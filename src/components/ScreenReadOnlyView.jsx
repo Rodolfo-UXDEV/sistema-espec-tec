@@ -380,40 +380,6 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
                         </p>
                       </div>
                     </div>
-
-                    {/* Histórico de Alterações de Desenvolvimento */}
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
-                        Histórico de Alterações de Desenvolvimento
-                      </span>
-                      {!selectedComponent.change_history || selectedComponent.change_history.length === 0 ? (
-                        <div className="rounded-2xl bg-slate-50/20 dark:bg-slate-955/10 p-4 border border-slate-150 dark:border-slate-800/40 text-xs text-slate-400 italic">
-                          Nenhum registro de alteração para este componente.
-                        </div>
-                      ) : (
-                        <div className="rounded-2xl border border-slate-150 bg-white p-4 dark:border-slate-800 dark:bg-slate-955/10 max-h-[220px] overflow-y-auto space-y-3">
-                          {selectedComponent.change_history.slice().reverse().map((log, logIdx) => (
-                            <div key={logIdx} className="flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-1 border-b border-slate-100 dark:border-slate-800 pb-2 last:border-0 last:pb-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase border ${
-                                  log.new_status === 'concluido'
-                                    ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800/40'
-                                    : 'bg-red-50 text-red-655 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800/40'
-                                }`}>
-                                  {log.new_status}
-                                </span>
-                                <span className="text-slate-600 dark:text-slate-300 font-medium">
-                                  Alterado por {log.user || 'Desenvolvedor'}
-                                </span>
-                              </div>
-                              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
-                                {new Date(log.timestamp).toLocaleString('pt-BR')}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
                   </div>
                 )}
 
