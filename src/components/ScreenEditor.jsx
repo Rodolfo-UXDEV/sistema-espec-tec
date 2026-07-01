@@ -8,9 +8,20 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
   const [image, setImage] = useState(screen ? screen.image : null);
   const [components, setComponents] = useState(screen && screen.components ? screen.components : []);
 
+  const totalComps = components.length;
+  const completedComps = components.filter((c) => c.status === 'concluido').length;
+  const pct = totalComps > 0 ? Math.round((completedComps / totalComps) * 105) : 0;
+  // Wait, let's keep it at 100 max or standard percentage calculation:
+  // Math.round((completedComps / totalComps) * 100)
+  const screenPct = totalComps > 0 ? Math.round((completedComps / totalComps) * 100) : 0;
+
   // Modal states for child components
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingComponent, setEditingComponent] = useState(null);
+
+  // Save Confirmation / Success Modal states
+  const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
+  const [showSaveSuccessModal, setShowSaveSuccessModal] = useState(false);
   const [expandedStates, setExpandedStates] = useState({});
   const [componentToDelete, setComponentToDelete] = useState(null);
 
@@ -61,11 +72,16 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
     }
   };
 
-  const handleSaveScreen = async () => {
+  const handleSaveScreen = () => {
     if (!name.trim()) {
       alert('Por favor, insira o nome da tela.');
       return;
     }
+    setShowSaveConfirmModal(true);
+  };
+
+  const executeSaveScreen = async () => {
+    setShowSaveConfirmModal(false);
     const result = await onSave({
       id: currentScreen ? currentScreen.id : Date.now(),
       name: name.trim(),
@@ -74,6 +90,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
     });
     if (result) {
       setCurrentScreen(result);
+      setShowSaveSuccessModal(true);
     }
   };
 
@@ -98,17 +115,44 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
       </div>
 
       {/* Screen Name Input */}
-      <div className="flex flex-col gap-1.5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Nome da Tela
-        </label>
-        <input
-          type="text"
-          placeholder="Ex: Tela de Login, Home Dashboard"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        {/* Nome da Tela Input */}
+        <div className="flex flex-col gap-1.5 md:col-span-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Nome da Tela
+          </label>
+          <input
+            type="text"
+            placeholder="Ex: Tela de Login, Home Dashboard"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+          />
+        </div>
+
+        {/* Conclusão da Tela */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Conclusão da Tela
+          </label>
+          <div className="flex items-center gap-3 mt-2">
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase border shrink-0 ${
+              screenPct === 100
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-955/20 dark:text-emerald-400 dark:border-emerald-800/40'
+                : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-955/20 dark:text-rose-400 dark:border-rose-800/40'
+            }`}>
+              {screenPct}% concluído
+            </span>
+            <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden shadow-inner max-w-[100px] hidden xs:block">
+              <div 
+                className={`h-full rounded-full transition-all duration-500 ${
+                  screenPct === 100 ? 'bg-emerald-500' : 'bg-rose-500'
+                }`}
+                style={{ width: `${screenPct}%` }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 1 - Upload da Imagem da Tela */}
@@ -166,7 +210,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
                   <div className="flex items-center justify-between dark:border-slate-800/50">
                     <div
                       onClick={() => toggleExpand(comp.id)}
-                      className="flex items-center gap-3 cursor-pointer select-none group/title"
+                      className="flex flex-wrap items-center gap-3 cursor-pointer select-none group/title"
                     >
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-xs font-bold text-indigo-650 dark:bg-indigo-950/40 dark:text-indigo-400 transition-colors group-hover/title:bg-indigo-100 dark:group-hover/title:bg-indigo-900/60">
                         {index + 1}
@@ -174,6 +218,15 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
                       <span className="font-display text-base font-bold text-slate-900 dark:text-white group-hover/title:text-indigo-600 dark:group-hover/title:text-indigo-400 transition-colors">
                         {comp.name}
                       </span>
+                      {comp.status === 'concluido' ? (
+                        <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 uppercase">
+                          concluído
+                        </span>
+                      ) : (
+                        <span className="inline-flex rounded-full bg-rose-50 px-2.5 py-0.5 text-[9px] font-bold text-rose-750 dark:bg-rose-955/20 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 uppercase">
+                          não desenvolvido
+                        </span>
+                      )}
                       <svg
                         className={`h-4.5 w-4.5 text-slate-400 group-hover/title:text-indigo-650 dark:group-hover/title:text-indigo-400 transition-transform duration-200 ${expandedStates[comp.id] === true ? 'rotate-180' : ''}`}
                         fill="none"
@@ -399,10 +452,10 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
                                         <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 break-words whitespace-pre-wrap">
                                           {s.description || '-'}
                                         </td>
-                                        <td className="px-4 py-2.5 font-mono text-slate-655 dark:text-slate-355 break-all whitespace-pre-wrap">
+                                        <td className="px-4 py-2.5 font-mono text-slate-655 dark:text-slate-355 break-words whitespace-pre-wrap">
                                           {s.request || '-'}
                                         </td>
-                                        <td className="px-4 py-2.5 font-mono text-slate-655 dark:text-slate-355 break-all whitespace-pre-wrap">
+                                        <td className="px-4 py-2.5 font-mono text-slate-655 dark:text-slate-355 break-words whitespace-pre-wrap">
                                           {s.response || '-'}
                                         </td>
                                       </tr>
@@ -488,6 +541,74 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
                 className="flex-1 rounded-xl bg-rose-500 hover:bg-rose-600 px-4 py-2.5 text-xs font-semibold text-white active:scale-95 transition-all cursor-pointer"
               >
                 Sim, excluir!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Save Confirmation Modal */}
+      {showSaveConfirmModal && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border border-slate-250 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400 mb-4">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-1.5-1.5M12 14V3" />
+              </svg>
+            </div>
+            <h3 className="text-center font-display text-lg font-bold text-slate-800 dark:text-white mb-2">
+              Confirmar Gravação
+            </h3>
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-6">
+              Deseja gravar as alterações realizadas nesta tela?
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSaveConfirmModal(false)}
+                className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer"
+              >
+                Não
+              </button>
+              <button
+                type="button"
+                onClick={executeSaveScreen}
+                className="flex-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 py-2.5 text-sm font-semibold text-white active:scale-95 transition-all cursor-pointer"
+              >
+                Sim, gravar!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Success Modal */}
+      {showSaveSuccessModal && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border border-slate-250 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-950/30 dark:text-emerald-400 mb-4">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-center font-display text-lg font-bold text-slate-800 dark:text-white mb-2">
+              Gravado com sucesso!
+            </h3>
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-6">
+              A tela e todos os seus detalhamentos foram gravados com sucesso no banco de dados.
+            </p>
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowSaveSuccessModal(false)}
+                className="w-full sm:w-auto min-w-[120px] rounded-xl bg-emerald-600 hover:bg-emerald-700 py-2.5 px-6 text-sm font-semibold text-white active:scale-95 transition-all cursor-pointer"
+              >
+                Ok
               </button>
             </div>
           </div>

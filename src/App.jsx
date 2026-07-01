@@ -79,10 +79,16 @@ export default function App() {
   const [evidenceModalMode, setEvidenceModalMode] = useState('edit'); // 'edit' or 'view'
   const [activeCriterionIndex, setActiveCriterionIndex] = useState(null);
 
-  // Fetch screens on mount
+  // Save Confirmation / Success Modal states
+  const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
+  const [showSaveSuccessModal, setShowSaveSuccessModal] = useState(false);
+
+  // Fetch screens on mount and view changes
   useEffect(() => {
-    fetchScreensList();
-  }, []);
+    if (currentView === 'home') {
+      fetchScreensList();
+    }
+  }, [currentView]);
 
   // Security guard for Developer role: redirect if they try to access edit views
   useEffect(() => {
@@ -94,13 +100,59 @@ export default function App() {
   const fetchScreensList = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // 1. Fetch screens
+      const { data: screensData, error: screensErr } = await supabase
         .from('screens')
         .select('id, name, created_at')
         .order('name');
       
-      if (error) throw error;
-      if (data) setScreensList(data);
+      if (screensErr) throw screensErr;
+
+      if (screensData) {
+        // 2. Fetch all components to compute specification progress
+        const { data: allComps, error: compsErr } = await supabase
+          .from('components')
+          .select('id, screen_id, description');
+
+        if (compsErr) throw compsErr;
+
+        // Group components by screen_id and calculate progress for each specification
+        const screensWithProgress = screensData.map(screen => {
+          const comps = allComps ? allComps.filter(c => c.screen_id === screen.id) : [];
+          
+          let total = 0;
+          let completed = 0;
+
+          comps.forEach(comp => {
+            let parentScreenId = null;
+            let status = 'não desenvolvido';
+            try {
+              if (comp.description && comp.description.trim().startsWith('{')) {
+                const parsed = JSON.parse(comp.description);
+                if (parsed && parsed.parent_screen_id) {
+                  parentScreenId = parsed.parent_screen_id;
+                  status = parsed.status || 'não desenvolvido';
+                }
+              }
+            } catch (e) {}
+
+            if (parentScreenId) {
+              total++;
+              if (status === 'concluido') {
+                completed++;
+              }
+            }
+          });
+
+          const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+          return {
+            ...screen,
+            progress
+          };
+        });
+
+        setScreensList(screensWithProgress);
+      }
     } catch (err) {
       console.error('Erro ao buscar lista de telas:', err.message);
     } finally {
@@ -474,7 +526,6 @@ export default function App() {
       setDetails(updatedDetails);
       setActiveScreen(updatedScreenObj);
 
-      alert('Tela gravada com sucesso no banco de dados!');
       fetchScreensList(); // refresh screens list dropdown
       
       return updatedScreenObj;
@@ -486,12 +537,15 @@ export default function App() {
     }
   };
 
-  const handleSaveAllToSupabase = async () => {
+  const handleSaveAllToSupabase = () => {
     if (!screenName.trim()) {
       alert('Por favor, insira o nome da especificação.');
       return;
     }
+    setShowSaveConfirmModal(true);
+  };
 
+  const executeSaveAllToSupabase = async () => {
     setIsSaving(true);
     try {
       let screenId = selectedScreenId;
@@ -636,7 +690,7 @@ export default function App() {
         }
       }
 
-      alert('Especificações da tela salvas com sucesso no Supabase!');
+      setShowSaveSuccessModal(true);
       fetchScreensList(); // refresh screens list dropdown
     } catch (err) {
       alert('Erro ao salvar especificações: ' + err.message);
@@ -744,8 +798,8 @@ export default function App() {
             .section p { margin: 0 0 12px 0; white-space: pre-wrap; }
             .image-gallery { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
             .image-gallery img { max-width: 100%; max-height: 200px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 6px; padding: 3px; background-color: #f8fafc; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 12px; }
-            th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 12px; table-layout: fixed; }
+            th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; word-break: break-word; overflow-wrap: break-word; }
             th { background-color: #f1f5f9; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 10px; }
             .badge { display: inline-block; padding: 2px 6px; border-radius: 9999px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
             .badge-pendente { background-color: #fef3c7; color: #d97706; }
@@ -754,6 +808,7 @@ export default function App() {
             .badge-bloqueado { background-color: #fee2e2; color: #dc2626; }
             .page-break { page-break-before: always; }
             .avoid-break { page-break-inside: avoid; }
+            * { box-sizing: border-box; }
           </style>
           
           <h1>Especificação Técnica</h1>
@@ -781,7 +836,7 @@ export default function App() {
 
       if (specFlows && specFlows.length > 0) {
         htmlContent += `
-          <div class="section avoid-break">
+          <div class="section">
             <h2>Fluxos Propostos</h2>
             <div class="image-gallery">
               ${specFlows.map((flow) => `<img src="${flow}" alt="Fluxo Proposto">`).join('')}
@@ -791,7 +846,7 @@ export default function App() {
       }
 
       htmlContent += `
-        <div class="section avoid-break">
+        <div class="section">
           <h2>Critérios de Aceite</h2>
           ${
             specCriteria.length === 0
@@ -861,7 +916,7 @@ export default function App() {
 
           if (screen.image) {
             htmlContent += `
-              <div style="margin-bottom: 20px;" class="avoid-break">
+              <div style="margin-bottom: 20px;">
                 <strong>Mock-up da Tela:</strong><br/>
                 <img src="${screen.image}" alt="${screen.name}" style="max-width: 100%; max-height: 300px; margin-top: 8px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px;">
               </div>
@@ -873,7 +928,7 @@ export default function App() {
             
             screen.components.forEach((comp) => {
               htmlContent += `
-                <div style="margin-bottom: 24px; padding: 12px; border: 1px dashed #cbd5e1; border-radius: 8px; background-color: #fafafa;" class="avoid-break">
+                <div style="margin-bottom: 24px; padding: 12px; border: 1px dashed #cbd5e1; border-radius: 8px; background-color: #fafafa;">
                   <h5 style="font-size: 13px; margin: 0 0 6px 0; color: #1e1b4b; font-weight: 700;">
                     Componente: ${comp.name}
                   </h5>
@@ -930,11 +985,11 @@ export default function App() {
                       <thead>
                         <tr>
                           <th style="width: 10%;">ID</th>
-                          <th style="width: 15%;">Método / Tipo</th>
-                          <th style="width: 30%;">Endpoint / Tópico / Arquivo</th>
-                          <th style="width: 25%;">Descrição</th>
-                          <th style="width: 10%;">Request</th>
-                          <th style="width: 10%;">Response</th>
+                          <th style="width: 12%;">Método / Tipo</th>
+                          <th style="width: 28%;">Endpoint / Tópico / Arquivo</th>
+                          <th style="width: 20%;">Descrição</th>
+                          <th style="width: 15%;">Request</th>
+                          <th style="width: 15%;">Response</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -946,8 +1001,8 @@ export default function App() {
                             <td>${s.method || ''}</td>
                             <td style="word-break: break-all;">${s.endpoint || ''}</td>
                             <td>${s.description || ''}</td>
-                            <td>${s.request ? 'Sim' : 'Não'}</td>
-                            <td>${s.response ? 'Sim' : 'Não'}</td>
+                            <td style="font-family: monospace; white-space: pre-wrap; word-break: break-word;">${s.request || '-'}</td>
+                            <td style="font-family: monospace; white-space: pre-wrap; word-break: break-word;">${s.response || '-'}</td>
                           </tr>
                         `
                           )
@@ -968,12 +1023,12 @@ export default function App() {
 
       htmlContent += `</div>`;
 
-      // Create a wrapper that is fixed and hidden behind everything
+      // Create a wrapper that is absolute and hidden off-screen to prevent scroll offset issues
       const wrapper = document.createElement('div');
-      wrapper.style.position = 'fixed';
+      wrapper.style.position = 'absolute';
       wrapper.style.top = '0';
-      wrapper.style.left = '0';
-      wrapper.style.width = '800px';
+      wrapper.style.left = '-9999px';
+      wrapper.style.width = '1020px';
       wrapper.style.height = '1px';
       wrapper.style.overflow = 'hidden';
       wrapper.style.zIndex = '-9999';
@@ -981,7 +1036,7 @@ export default function App() {
       
       // Create the content container that we pass to html2pdf (no positioning inline style!)
       const tempContainer = document.createElement('div');
-      tempContainer.style.width = '800px';
+      tempContainer.style.width = '1020px';
       tempContainer.style.backgroundColor = '#ffffff';
       tempContainer.innerHTML = htmlContent;
       
@@ -1004,8 +1059,8 @@ export default function App() {
           margin: 10,
           filename: filename,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, logging: false },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0, scrollX: 0 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
           pagebreak: { mode: ['avoid-all', 'css'] }
         };
 
@@ -1064,6 +1119,13 @@ export default function App() {
     setSpecCriteria([]);
     setCurrentView('edit');
   };
+
+  const totalComponents = details ? details.reduce((acc, screen) => acc + (screen.components ? screen.components.length : 0), 0) : 0;
+  const completedComponents = details ? details.reduce((acc, screen) => {
+    if (!screen.components) return acc;
+    return acc + screen.components.filter(c => c.status === 'concluido').length;
+  }, 0) : 0;
+  const completionPercentage = totalComponents > 0 ? Math.round((completedComponents / totalComponents) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-200">
@@ -1152,6 +1214,7 @@ export default function App() {
             isLoading={isLoading}
             specAuthors={specAuthors}
             isDeveloper={userRole === 'desenvolvedor'}
+            onTrocarPerfil={() => setCurrentView('landing')}
           />
         ) : currentView === 'view' ? (
           <ScreenViewer
@@ -1165,6 +1228,7 @@ export default function App() {
             specDescription={specDescription}
             specFlows={specFlows}
             specAuthors={specAuthors}
+            specCriteria={specCriteria}
             onSelectScreen={(screen) => {
               setActiveScreen(screen);
               setCurrentView('screen-editor');
@@ -1176,6 +1240,28 @@ export default function App() {
             <ScreenReadOnlyView
               screen={activeScreen}
               onBack={() => setCurrentView('view')}
+              onComponentStatusToggle={(compId, newStatus, newHistory) => {
+                // 1. Update details state (so other pages like overall progress update)
+                const updatedDetails = details.map(scr => {
+                  if (scr.id === activeScreen.id) {
+                    const updatedComps = scr.components.map(c => 
+                      c.id === compId ? { ...c, status: newStatus, change_history: newHistory } : c
+                    );
+                    return { ...scr, components: updatedComps };
+                  }
+                  return scr;
+                });
+                setDetails(updatedDetails);
+
+                // 2. Update activeScreen state (so ScreenReadOnlyView receives the fresh prop)
+                const updatedActiveScreen = {
+                  ...activeScreen,
+                  components: activeScreen.components.map(c => 
+                    c.id === compId ? { ...c, status: newStatus, change_history: newHistory } : c
+                  )
+                };
+                setActiveScreen(updatedActiveScreen);
+              }}
             />
           ) : (
             <ScreenEditor
@@ -1219,10 +1305,10 @@ export default function App() {
                 </div>
               </div>
               
-              {/* Specification Metadata Grid (Nome, Data Criacao, Autor) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              {/* Specification Metadata Grid (Nome, Data Criacao, Autor, Progresso) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 {/* Nome da Especificação */}
-                <div className="flex flex-col gap-1.5 md:col-span-2">
+                <div className="flex flex-col gap-1.5 md:col-span-3">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-555 dark:text-slate-400">
                     Nome da Especificação
                   </label>
@@ -1279,6 +1365,30 @@ export default function App() {
                     disabled
                     className="rounded-xl border border-slate-250 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-455 outline-none cursor-not-allowed dark:border-slate-800 dark:bg-slate-855 dark:text-slate-500"
                   />
+                </div>
+
+                {/* Conclusão da Especificação */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-555 dark:text-slate-400">
+                    Conclusão da Especificação
+                  </label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase border shrink-0 ${
+                      completionPercentage === 100
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-955/20 dark:text-emerald-400 dark:border-emerald-800/40'
+                        : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-955/20 dark:text-rose-400 dark:border-rose-800/40'
+                    }`}>
+                      {completionPercentage}% concluído
+                    </span>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden shadow-inner max-w-[100px] hidden xs:block">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          completionPercentage === 100 ? 'bg-emerald-500' : 'bg-rose-500'
+                        }`}
+                        style={{ width: `${completionPercentage}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1502,7 +1612,7 @@ export default function App() {
                     {isSaving ? (
                       <>
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                        Salvando no Supabase...
+                        Gravando...
                       </>
                     ) : (
                       'Salvar Configurações'
@@ -1568,6 +1678,78 @@ export default function App() {
         criterionId={activeCriterionIndex !== null ? specCriteria[activeCriterionIndex].customId : ''}
         mode={evidenceModalMode}
       />
+
+      {/* Save Confirmation Modal */}
+      {showSaveConfirmModal && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border border-slate-250 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400 mb-4">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-1.5-1.5M12 14V3" />
+              </svg>
+            </div>
+            <h3 className="text-center font-display text-lg font-bold text-slate-855 dark:text-white mb-2">
+              Confirmar Gravação
+            </h3>
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-6">
+              Deseja gravar as alterações realizadas na especificação técnica?
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowSaveConfirmModal(false)}
+                className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 active:scale-95 transition-all dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 cursor-pointer"
+              >
+                Não
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSaveConfirmModal(false);
+                  executeSaveAllToSupabase();
+                }}
+                className="flex-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 py-2.5 text-sm font-semibold text-white active:scale-95 transition-all cursor-pointer"
+              >
+                Sim, gravar!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Success Modal */}
+      {showSaveSuccessModal && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl border border-slate-250 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-955/30 dark:text-emerald-400 mb-4">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-center font-display text-lg font-bold text-slate-855 dark:text-white mb-2">
+              Gravado com sucesso!
+            </h3>
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-6">
+              As especificações da tela foram gravadas com sucesso no banco de dados.
+            </p>
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowSaveSuccessModal(false)}
+                className="w-full sm:w-auto min-w-[120px] rounded-xl bg-emerald-600 hover:bg-emerald-700 py-2.5 px-6 text-sm font-semibold text-white active:scale-95 transition-all cursor-pointer"
+              >
+                Ok
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function ScreenReadOnlyView({ screen, onBack }) {
+export default function ScreenReadOnlyView({ screen, onBack, onComponentStatusToggle }) {
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [activeTab, setActiveTab] = useState('general'); // 'general', 'fields', 'services'
   const [localComponents, setLocalComponents] = useState([]);
@@ -15,6 +15,7 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
   }, [screen]);
 
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isImageExpanded, setIsImageExpanded] = useState(false);
 
   const handleToggleStatus = async () => {
     if (!selectedComponent) return;
@@ -55,6 +56,9 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
       );
       setLocalComponents(updated);
       setSelectedComponent(prev => ({ ...prev, status: newStatus, change_history: newHistory }));
+      if (onComponentStatusToggle) {
+        onComponentStatusToggle(selectedComponent.id, newStatus, newHistory);
+      }
     } catch (err) {
       alert('Erro ao atualizar o status de desenvolvimento: ' + err.message);
     } finally {
@@ -89,7 +93,7 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
       </div>
 
       {/* Screen Info Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
@@ -101,20 +105,20 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
           </div>
           <div className="sm:text-right">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
-              Porcentagem de Desenvolvimento
+              Conclusão da Tela
             </span>
-            <div className="flex items-center gap-3 sm:justify-end">
-              <span className={`text-lg font-extrabold ${
-                completionPercentage === 100 
-                  ? 'text-green-600 dark:text-green-400' 
-                  : 'text-indigo-650 dark:text-indigo-400'
+            <div className="flex items-center gap-3 sm:justify-end mt-2">
+              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase border shrink-0 ${
+                completionPercentage === 100
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-955/20 dark:text-emerald-400 dark:border-emerald-800/40'
+                  : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-955/20 dark:text-rose-400 dark:border-rose-800/40'
               }`}>
-                {completionPercentage}%
+                {completionPercentage}% concluído
               </span>
               <div className="w-24 bg-slate-100 dark:bg-slate-850 h-2 rounded-full overflow-hidden shadow-inner hidden xs:block">
                 <div 
                   className={`h-full rounded-full transition-all duration-500 ${
-                    completionPercentage === 100 ? 'bg-green-500' : 'bg-indigo-600'
+                    completionPercentage === 100 ? 'bg-emerald-500' : 'bg-rose-500'
                   }`}
                   style={{ width: `${completionPercentage}%` }}
                 />
@@ -122,40 +126,44 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Screen Mockup/Image */}
-        <div className="space-y-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
-            Mock-up / Imagem da Tela
-          </span>
-          {screen && screen.image ? (
-            <div className="flex max-h-[400px] items-center justify-center rounded-2xl border border-slate-150 bg-slate-50/30 p-4 dark:border-slate-800 dark:bg-slate-950/20 overflow-hidden shadow-sm">
-              <img
-                src={screen.image}
-                alt={screen.name}
-                className="max-h-[360px] rounded-lg object-contain transition-transform duration-300 hover:scale-[1.01]"
+      {/* Screen Mockup/Image Card */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-3">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+          Mock-up / Imagem da Tela
+        </span>
+        {screen && screen.image ? (
+          <div 
+            onClick={() => setIsImageExpanded(true)}
+            className="flex max-h-[400px] items-center justify-center rounded-2xl border border-slate-150 bg-slate-50/30 p-4 dark:border-slate-800 dark:bg-slate-950/20 overflow-hidden shadow-sm cursor-pointer hover:bg-slate-100/35 dark:hover:bg-slate-950/40 transition-all duration-200 group"
+            title="Clique para expandir"
+          >
+            <img
+              src={screen.image}
+              alt={screen.name}
+              className="max-h-[360px] rounded-lg object-contain transition-transform duration-300 group-hover:scale-[1.015]"
+            />
+          </div>
+        ) : (
+          <div className="flex h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-250 bg-slate-50/50 p-6 text-center dark:border-slate-800 dark:bg-slate-955/20">
+            <svg
+              className="h-10 w-10 text-slate-350 dark:text-slate-600 mb-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
-            </div>
-          ) : (
-            <div className="flex h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-250 bg-slate-50/50 p-6 text-center dark:border-slate-800 dark:bg-slate-955/20">
-              <svg
-                className="h-10 w-10 text-slate-350 dark:text-slate-600 mb-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <span className="text-sm font-medium text-slate-455 dark:text-slate-500">Sem imagem de mock-up da tela</span>
-            </div>
-          )}
-        </div>
+            </svg>
+            <span className="text-sm font-medium text-slate-455 dark:text-slate-500">Sem imagem de mock-up da tela</span>
+          </div>
+        )}
       </div>
 
       {/* Components Grid Section */}
@@ -480,10 +488,10 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
                                 <td className="px-4 py-3 text-slate-655 dark:text-slate-350 break-words whitespace-pre-wrap font-medium">
                                   {s.description || '-'}
                                 </td>
-                                <td className="px-4 py-3 font-mono text-slate-655 dark:text-slate-350 break-all whitespace-pre-wrap font-medium">
+                                <td className="px-4 py-3 font-mono text-slate-655 dark:text-slate-350 break-words whitespace-pre-wrap font-medium">
                                   {s.request || '-'}
                                 </td>
-                                <td className="px-4 py-3 font-mono text-slate-655 dark:text-slate-355 break-all whitespace-pre-wrap font-medium">
+                                <td className="px-4 py-3 font-mono text-slate-655 dark:text-slate-355 break-words whitespace-pre-wrap font-medium">
                                   {s.response || '-'}
                                 </td>
                               </tr>
@@ -532,6 +540,31 @@ export default function ScreenReadOnlyView({ screen, onBack }) {
           </div>
         </div>
       )}
+
+      {/* Lightbox / Expanded Image Modal */}
+      {isImageExpanded && screen && screen.image && (
+        <div 
+          onClick={() => setIsImageExpanded(false)}
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200 cursor-zoom-out"
+        >
+          <div className="relative max-w-5xl max-h-[90vh] flex items-center justify-center">
+            <img
+              src={screen.image}
+              alt={screen.name}
+              className="max-h-[85vh] max-w-full rounded-2xl object-contain shadow-2xl animate-in zoom-in-95 duration-200"
+            />
+            <button
+              onClick={() => setIsImageExpanded(false)}
+              className="absolute top-4 right-4 rounded-full bg-slate-900/60 p-2 text-white hover:bg-slate-900 active:scale-90 transition-all cursor-pointer shadow"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -263,6 +263,7 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
   - Criação do componente [ScreenViewer.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx) que renderiza o mock-up e um grid responsivo com as fotos dos componentes.
   - Atualização do [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para alternar dinamicamente entre as visões de edição e visualização, compartilhando o cache de dados do Supabase.
   - Forçamento do **Tema Claro** em todo o sistema no [index.css](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/index.css) configurando a diretiva `@custom-variant dark` do Tailwind v4 para depender da classe `.dark` (não ativa).
+  - Inicialização do repositório Git local e publicação de todo o código no GitHub em: [sistema-espec-tec](https://github.com/Rodolfo-UXDEV/sistema-espec-tec).
   - Verificação e compilação do projeto com sucesso através do Vite.
 
 ### Sessão 7: Customização de Cores (23/06/2026)
@@ -530,6 +531,233 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
   - Inserção de uma tag estilizada ao lado do título "Telas da Especificação".
   - Configuração de coloração dinâmica baseada em Tailwind CSS: **Verde** (emerald) caso o progresso seja rigorosamente `100%`, e **Vermelho** (rose) para quaisquer porcentagens inferiores.
   - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 36: Percentual de Conclusão por Tela (01/07/2026)
+- **Objetivo**: Mover o indicador de progresso para que mostre a porcentagem de conclusão individualizada por tela, exibindo-a em cada card de opção da tela na visualização de especificações.
+- **Entregas**:
+  - Remoção da tag de percentual geral (global) ao lado do título "Telas da Especificação" no componente [ScreenViewer.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx).
+  - Implementação da lógica de progresso por tela em cada card mapeado em [ScreenViewer.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx), dividindo a quantidade de componentes concluídos pelo total de componentes cadastrados naquela tela específica.
+  - Exibição de uma tag flutuante (`absolute top-3 right-3`) em cada card de tela indicando a porcentagem individual seguida pelo texto "concluído" (ex: `50% concluído`), com coloração dinâmica: **Verde** (emerald) para 100% e **Vermelho** (rose) para valores menores.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 37: Seção de Critérios de Aceite na Visualização de Especificações (01/07/2026)
+- **Objetivo**: Adicionar a seção de Critérios de Aceite no formato de somente leitura na tela "Visualizar Especificação" para o Desenvolvedor, alinhando a estética com as outras seções do sistema.
+- **Entregas**:
+  - Encaminhamento da prop `specCriteria` para o componente [ScreenViewer.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx) em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Implementação da seção e tabela de visualização estática (somente leitura) de "Critérios de Aceite" em [ScreenViewer.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx), exibindo ID, Critério, Status (estilizado em badges), Responsável e Evidência.
+  - Alinhamento visual do cabeçalho da seção "Critérios de Aceite" para seguir o padrão estático com o pilar índigo vertical à esquerda, combinando com "Fluxos Propostos" e "Telas da Especificação".
+  - Integração do [EvidenceModal.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/EvidenceModal.jsx) em modo de visualização somente leitura (`mode="view"`) para permitir que o desenvolvedor visualize os detalhes e anexos da evidência ao clicar no ícone correspondente.
+  - Remoção de quaisquer controles ou botões de edição ou exclusão (como adicionar/excluir critério) na referida seção.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 38: Percentual de Conclusão Geral nos Perfis (01/07/2026)
+- **Objetivo**: Adicionar o percentual de conclusão geral e a respectiva barra de progresso no card de descrição/metadados da especificação técnica em ambos os perfis (Analista e Desenvolvedor).
+- **Entregas**:
+  - Reestruturação do grid de metadados em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) (Analista) para 3 colunas, inserindo a nova coluna "Conclusão da Especificação" contendo um badge com a porcentagem e uma mini barra de progresso (verde/vermelha dependendo da conclusão completa).
+  - Reestruturação do grid de metadados em [ScreenViewer.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx) (Desenvolvedor) de forma idêntica para exibir a mesma coluna de progresso geral.
+  - Lógica de cálculo de progresso geral unificada e integrada nos dois componentes.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 39: Ajuste no Alinhamento da Conclusão da Especificação (01/07/2026)
+- **Objetivo**: Remover o invólucro simulador de input do indicador de progresso na tela do Analista, deixando-o alinhado diretamente à esquerda e consistente com o perfil do Desenvolvedor.
+- **Entregas**:
+  - Remoção da classe de input box com bordas e sombras do indicador de progresso em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Alinhamento da tag e da barra de progresso diretamente à esquerda no container do grid com um espaçamento superior (`mt-2`) e flex layout simples.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 40: Progresso da Tela na Lista de Telas do Analista (01/07/2026)
+- **Objetivo**: Trajar a porcentagem de conclusão individual de cada tela diretamente na lista de detalhamento de telas do perfil do Analista.
+- **Entregas**:
+  - Atualização do componente [ScreensListSection.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreensListSection.jsx) para calcular a taxa de conclusão de cada tela com base nos status de seus componentes filhos.
+  - Exibição de um badge colorido (`100% concluído` em verde ou inferior em vermelho) ao lado do nome da respectiva tela no detalhamento.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 41: Progresso no Editor de Tela do Analista (01/07/2026)
+- **Objetivo**: Apresentar a porcentagem de conclusão da tela ao editar uma tela no perfil do Analista.
+- **Entregas**:
+  - Implementação da lógica de cálculo do progresso da tela baseado nos componentes em [ScreenEditor.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx).
+  - Adição do badge de status (`% concluído`) ao lado do título principal *"Editar Tela"* no cabeçalho e também ao lado do rótulo *"Nome da Tela"* no card do formulário para maior visibilidade.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 42: Status do Componente no Editor de Tela do Analista (01/07/2026)
+- **Objetivo**: Adicionar a tag indicando o status de desenvolvimento (concluído ou não desenvolvido) para cada componente na seção "Componentes da Tela" dentro do editor do perfil do Analista.
+- **Entregas**:
+  - Atualização de [ScreenEditor.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx) para exibir a tag informativa do status do respectivo componente ao lado do seu título/nome na listagem.
+  - Utilização do padrão visual de cores: verde (`emerald`) para concluído e vermelho (`rose`) para não desenvolvido.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 43: Remoção do Badge de Progresso do Cabeçalho do Editor de Tela (01/07/2026)
+- **Objetivo**: Remover a tag de porcentagem de conclusão do cabeçalho da tela "Editar Tela" no perfil do Analista para manter um visual mais limpo.
+- **Entregas**:
+  - Ajuste de [ScreenEditor.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx) para remover a exibição do badge `% concluído` ao lado do título *"Editar Tela"* no cabeçalho.
+  - O indicador de conclusão permanece ativo e legível dentro do formulário ao lado do campo *"Nome da Tela"*.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 44: Ajuste do Progresso Individual da Tela no Editor do Analista (01/07/2026)
+- **Objetivo**: Posicionar o indicador de conclusão da tela ao lado do campo do nome da tela, exibindo o rótulo "Conclusão da Tela" e a tag informativa de conclusão logo abaixo.
+- **Entregas**:
+  - Reestruturação do card de "Nome da Tela" em [ScreenEditor.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx) para um layout em grid de duas colunas (sendo a primeira para a caixa de texto e a segunda para o status).
+  - Adição do rótulo *"Conclusão da Tela"* e do badge de progresso/barra correspondentes diretamente abaixo desse rótulo.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 45: Alinhamento de Progresso de Tela no Perfil de Desenvolvedor (01/07/2026)
+- **Objetivo**: Padronizar a exibição da porcentagem de conclusão individual na tela "Visualizar Tela" do perfil do Desenvolvedor para ficar idêntica à tela do Analista.
+- **Entregas**:
+  - Atualização do rótulo de *"Porcentagem de Desenvolvimento"* para *"Conclusão da Tela"* em [ScreenReadOnlyView.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx).
+  - Alinhamento da tag `% concluído` com as respectivas cores dinâmicas e da barra de progresso diretamente abaixo desse rótulo.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 46: Separação de Seções e Expansão de Mockup no Perfil do Desenvolvedor (01/07/2026)
+- **Objetivo**: Separar as informações de metadados da tela do mockup (mockup em uma sessão própria) na tela de visualizar tela do desenvolvedor, além de permitir a expansão da imagem ao ser clicada.
+- **Entregas**:
+  - Separação do card de informações gerais de [ScreenReadOnlyView.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx) em dois cards distintos: um contendo Nome/Conclusão e outro contendo o Mockup da Tela.
+  - Implementação de um clique no contêiner do mockup para abrir um modal/lightbox em tela cheia com a imagem expandida para facilitar a visualização de detalhes.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 47: Porcentagem de Conclusão na Lista de Especificações (01/07/2026)
+- **Objetivo**: Exibir a porcentagem de conclusão de cada especificação técnica na tela "Lista de Especificações", tanto para o perfil de Analista quanto de Desenvolvedor.
+- **Entregas**:
+  - Atualização da função `fetchScreensList` em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para buscar todos os componentes cadastrados no Supabase e calcular a porcentagem geral de conclusão de cada especificação a partir do status dos componentes filhos.
+  - Implementação de um efeito (`useEffect`) para disparar a atualização automática da listagem toda vez que a visualização principal retornar para `'home'` (garantindo dados atualizados em tempo real).
+  - Inclusão da nova coluna *"Conclusão"* com o badge de progresso colorido correspondente em [SpecificationList.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx).
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 48: Modais de Confirmação e Sucesso ao Gravar Especificações (01/07/2026)
+- **Objetivo**: Substituir o uso de alertas do navegador (`alert()`) por modais elegantes de confirmação e sucesso ao salvar as especificações técnicas, além de renomear o texto de loading do botão de salvamento.
+- **Entregas**:
+  - Implementação do estado e componentes de modal para confirmação (`showSaveConfirmModal`) e sucesso (`showSaveSuccessModal`) em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Alteração da ação do botão *"Salvar Configurações"* para disparar o modal de confirmação.
+  - Vinculação do salvamento real (`executeSaveAllToSupabase`) ao botão *"Sim"* do modal de confirmação, e exibição do modal de sucesso ao finalizar a transação no banco de dados.
+  - Alteração da mensagem do estado de salvamento do botão de *"Salvando no Supabase..."* para *"Gravando..."*.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 49: Correção das Cores dos Botões nos Modais de Gravação (01/07/2026)
+- **Objetivo**: Corrigir as classes do Tailwind CSS nos botões dos novos modais de confirmação e sucesso, que estavam invisíveis devido a um peso de cor inválido.
+- **Entregas**:
+  - Ajuste em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para trocar a classe `bg-indigo-650` por `bg-indigo-600` no botão "Sim" do modal de confirmação.
+  - Troca da classe `bg-emerald-650` por `bg-emerald-600` no botão "Ok" do modal de sucesso (corrigindo o problema do botão invisível).
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 50: Modais de Confirmação e Sucesso ao Gravar no Editor de Tela (01/07/2026)
+- **Objetivo**: Implementar o mesmo fluxo de modais de confirmação e sucesso no botão "Gravar" dentro da tela de editar tela do Analista.
+- **Entregas**:
+  - Implementação dos estados de controle de modais (`showSaveConfirmModal` e `showSaveSuccessModal`) e estruturas JSX correspondentes em [ScreenEditor.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx).
+  - Remoção do alerta do navegador (`alert()`) no fluxo de salvamento de telas em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Configuração do botão "Gravar" no editor para disparar o modal de confirmação, executando o salvamento real (`executeSaveScreen`) somente sob consentimento do usuário, exibindo o modal de sucesso com botão "Ok" em cor verde correta (`bg-emerald-600`) em seguida.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 51: Botão de Troca de Perfil na Lista de Especificações (01/07/2026)
+- **Objetivo**: Adicionar um botão "Trocar Perfil" nas telas de listagem de especificações (para ambos os perfis, Analista e Desenvolvedor) para permitir que o usuário volte para a tela inicial de seleção de perfil.
+- **Entregas**:
+  - Ajuste de [SpecificationList.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx) para receber a propriedade `onTrocarPerfil` e exibir o respectivo botão no cabeçalho de ações (alinhado ao lado de *"Arquivar Especificação"* para o Analista, e no cabeçalho para o Desenvolvedor).
+  - Configuração do callback `onTrocarPerfil` em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/src/App.jsx) para redirecionar a navegação de volta para a visualização `'landing'` (landing page de seleção de perfis).
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 52: Estilização do Botão de Nova Especificação (01/07/2026)
+- **Objetivo**: Alterar o visual do botão "Nova especificação" para azul escuro sólido, clareando sutilmente na interação de hover.
+- **Entregas**:
+  - Atualização do componente [SpecificationList.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx) para aplicar a classe de cor de fundo sólida `bg-blue-900` e a transição de clareamento `hover:bg-blue-800`.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 53: Remoção do Ícone de Visualizar na Listagem para o Analista (01/07/2026)
+- **Objetivo**: Remover o ícone de visualização (olho) das linhas da tabela "Lista de Especificações" quando o usuário estiver no perfil de Analista, mantendo-o apenas para o perfil de Desenvolvedor.
+- **Entregas**:
+  - Atualização do componente [SpecificationList.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx) para condicionar a renderização do botão *"Visualizar"* à flag `isDeveloper`.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 54: Sincronização do Status de Desenvolvimento do Componente (01/07/2026)
+- **Objetivo**: Garantir que as alterações de status de desenvolvimento efetuadas pelos desenvolvedores ("Desenvolvimento concluído") reflitam imediatamente na porcentagem de conclusão da tela e nos demais parâmetros do sistema em tempo real.
+- **Entregas**:
+  - Ajuste em [ScreenReadOnlyView.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx) para acionar um callback `onComponentStatusToggle` sempre que o status de um componente for alterado no banco de dados.
+  - Implementação do callback `onComponentStatusToggle` em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para sincronizar o status no estado local `details` e no objeto `activeScreen`, permitindo recálculo automático e re-renderização das barras de progresso do sistema.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 55: Preservação de Formatação JSON nas Colunas Request/Response (01/07/2026)
+- **Objetivo**: Evitar que dados de JSON estruturados inseridos nos serviços percam sua formatação (como quebras de linha e recuos) ao salvar ou visualizar na listagem de detalhamentos.
+- **Entregas**:
+  - Atualização do formulário em [ComponentModal.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ComponentModal.jsx) para utilizar elementos `<textarea rows={3}>` font-mono ao invés de `<input type="text">` nos campos de Request e Response, garantindo que o usuário consiga colar JSON indentado mantendo as quebras de linha.
+  - Substituição da propriedade CSS `break-all` por `break-words` nas colunas Request e Response de [ScreenReadOnlyView.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx), [ScreenEditor.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx), e [ComponentViewModal.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ComponentViewModal.jsx), impedindo que strings e números longos sejam truncados caractere por caractere.
+  - Adição das propriedades `break-words` e `whitespace-pre-wrap` nas células equivalentes em [ScreenDetailsSection.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenDetailsSection.jsx) para exibir as quebras de linha preservadas.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 56: Exportação de PDF em Modo Paisagem / Deitado (01/07/2026)
+- **Objetivo**: Configurar o download do PDF técnico para o formato paisagem (landscape) com largura ampliada, impedindo cortes de tabelas largas e perda de dados nas colunas dos detalhamentos.
+- **Entregas**:
+  - Ajuste de `handleExportPDF` em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para configurar `jsPDF` com a propriedade `orientation: 'landscape'`.
+  - Ampliação da largura do container de renderização temporário (`wrapper` e `tempContainer`) de `800px` para `1130px`, garantindo proporção A4 paisagem ideal durante a conversão do canvas do `html2pdf`.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 57: Correção de Informações Omissas e Espaços no PDF (01/07/2026)
+- **Objetivo**: Corrigir bugs de exportação no PDF técnico, restaurando a exibição real das payloads de Request e Response (que exibiam apenas "Sim/Não") e removendo quebras de página forçadas excessivas que causavam espaços em branco.
+- **Entregas**:
+  - Ajuste na tabela de serviços no PDF de [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para exibir a string real das colunas `s.request` e `s.response` com fonte monospace, quebras de linha (`white-space: pre-wrap`) e redimensionamento de largura (15% para cada).
+  - Remoção da classe `avoid-break` (que impedia quebra de página interna forçando espaços em branco) de grandes divisórias de fluxo, critérios e componentes.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 58: Correção do Espaço em Branco no Início do PDF (01/07/2026)
+- **Objetivo**: Resolver o problema de espaços em branco gigantescos gerados no início do PDF que ocorriam devido a offset de rolagem da janela durante a captura do html2canvas.
+- **Entregas**:
+  - Modificação do posicionamento do container temporário (`wrapper`) em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) de `position: fixed; left: 0` para `position: absolute; left: -9999px; top: 0`, dissociando o renderizador do viewport dinâmico.
+  - Adição das propriedades `scrollY: 0` e `scrollX: 0` nas opções do `html2canvas` para impedir que o scroll do navegador do usuário desloque a imagem gerada no PDF.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
+---
+
+### Sessão 59: Prevenção de Corte Lateral no PDF e Ajuste de Colunas (01/07/2026)
+- **Objetivo**: Corrigir o corte do conteúdo na lateral direita do PDF e a compressão excessiva das colunas de Request/Response.
+- **Entregas**:
+  - Aplicação das classes CSS `table-layout: fixed` e `word-break: break-word / overflow-wrap: break-word` em todas as tabelas geradas no HTML do PDF em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx). Isso força os textos longos de JSON a quebrarem corretamente dentro da largura definida e impede que a tabela transborde a folha.
+  - Ajuste de largura das colunas da tabela de serviços (ID: 8%, Método: 8%, Endpoint: 22%, Descrição: 18%, Request: 22%, Response: 22%), dobrando a largura útil para JSONs estruturados.
+  - Ajuste fino da largura máxima do container temporário de `1130px` para `1020px`, garantindo que ele caiba com folga dentro das dimensões úteis de impressão A4 em modo paisagem (landscape).
+  - Adição da regra global `* { box-sizing: border-box; }` no CSS do PDF.
+  - Verificação e compilação de build concluída com sucesso no Vite.
+
 
 ---
 

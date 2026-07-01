@@ -210,8 +210,8 @@ export default function ScreenDetailsSection({ details, onAddClick, onEditClick,
                             </td>
                             <td className="px-4 py-2 font-mono text-slate-600 dark:text-slate-300">{srv.endpoint || '-'}</td>
                             <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{srv.description || '-'}</td>
-                            <td className="px-4 py-2 text-slate-600 dark:text-slate-300 font-mono">{srv.request || '-'}</td>
-                            <td className="px-4 py-2 text-slate-600 dark:text-slate-300 font-mono">{srv.response || '-'}</td>
+                            <td className="px-4 py-2 text-slate-600 dark:text-slate-300 font-mono break-words whitespace-pre-wrap">{srv.request || '-'}</td>
+                            <td className="px-4 py-2 text-slate-600 dark:text-slate-300 font-mono break-words whitespace-pre-wrap">{srv.response || '-'}</td>
                           </tr>
                         ))}
                       </tbody>

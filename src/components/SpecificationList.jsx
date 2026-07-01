@@ -11,6 +11,7 @@ export default function SpecificationList({
   isLoading,
   specAuthors = {},
   isDeveloper = false,
+  onTrocarPerfil,
 }) {
   const [showArchived, setShowArchived] = useState(false);
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
@@ -77,64 +78,88 @@ export default function SpecificationList({
         </div>
 
         {/* Action Buttons */}
-        {!isDeveloper && (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowArchived(!showArchived)}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold border transition-all active:scale-95 ${
-                showArchived
-                  ? 'bg-slate-200 border-slate-350 text-slate-850 hover:bg-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700'
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-indigo-650 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400'
-              }`}
+        <div className="flex items-center gap-3">
+          {/* Trocar Perfil */}
+          <button
+            onClick={onTrocarPerfil}
+            className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-650 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400 active:scale-95 transition-all cursor-pointer"
+          >
+            <svg
+              className="h-4.5 w-4.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <svg
-                className="h-4.5 w-4.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {showArchived ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-                  />
-                )}
-              </svg>
-              {showArchived ? 'Ver Especificações Ativas' : 'Arquivar Especificação'}
-            </button>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+              />
+            </svg>
+            Trocar Perfil
+          </button>
 
-            <button
-              onClick={() => setIsNewModalOpen(true)}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-650 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-100 hover:from-indigo-600 hover:to-violet-700 active:scale-95 transition-all dark:shadow-none"
-            >
-              <svg
-                className="h-4.5 w-4.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+          {!isDeveloper && (
+            <>
+              <button
+                onClick={() => setShowArchived(!showArchived)}
+                className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold border transition-all active:scale-95 ${
+                  showArchived
+                    ? 'bg-slate-200 border-slate-350 text-slate-850 hover:bg-slate-300 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-indigo-650 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400'
+                }`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Nova especificação
-            </button>
-          </div>
-        )}
+                <svg
+                  className="h-4.5 w-4.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {showArchived ? (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  ) : (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                    />
+                  )}
+                </svg>
+                {showArchived ? 'Ver Especificações Ativas' : 'Arquivar Especificação'}
+              </button>
+
+              <button
+                onClick={() => setIsNewModalOpen(true)}
+                className="flex items-center gap-2 rounded-xl bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-blue-800 active:scale-95 transition-all cursor-pointer"
+              >
+                <svg
+                  className="h-4.5 w-4.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Nova especificação
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Specifications List Table / Cards */}
@@ -187,6 +212,7 @@ export default function SpecificationList({
                   <th className="px-6 py-4">Nome da Especificação</th>
                   <th className="px-6 py-4">Autor</th>
                   <th className="px-6 py-4">Data de Criação</th>
+                  <th className="px-6 py-4">Conclusão</th>
                   <th className="px-6 py-4 text-right">Ações</th>
                 </tr>
               </thead>
@@ -240,35 +266,46 @@ export default function SpecificationList({
                     <td className="px-6 py-4.5 text-sm text-slate-500 dark:text-slate-400">
                       {formatDate(screen.created_at)}
                     </td>
+                    <td className="px-6 py-4.5">
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase border shrink-0 ${
+                        (screen.progress || 0) === 100
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-955/20 dark:text-emerald-400 dark:border-emerald-800/40'
+                          : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-955/20 dark:text-rose-400 dark:border-rose-800/40'
+                      }`}>
+                        {screen.progress || 0}% concluído
+                      </span>
+                    </td>
                     <td className="px-6 py-4.5 text-right">
                       <div className="flex items-center justify-end gap-2.5">
                         {/* Botão Visualizar */}
-                        <button
-                          onClick={() => onView(screen.id)}
-                          title="Visualizar"
-                          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-all"
-                        >
-                          <svg
-                            className="h-4.5 w-4.5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
+                        {isDeveloper && (
+                          <button
+                            onClick={() => onView(screen.id)}
+                            title="Visualizar"
+                            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-all"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                        </button>
+                            <svg
+                              className="h-4.5 w-4.5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                              />
+                            </svg>
+                          </button>
+                        )}
 
                         {/* Botão Editar */}
                         {!isDeveloper && (

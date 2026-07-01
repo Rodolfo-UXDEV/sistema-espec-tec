@@ -277,10 +277,10 @@ export default function ComponentViewModal({ isOpen, onClose, component }) {
                               <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 break-words whitespace-pre-wrap">
                                 {srv.description || '-'}
                               </td>
-                              <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 font-mono break-all whitespace-pre-wrap">
+                              <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 font-mono break-words whitespace-pre-wrap">
                                 {srv.request || '-'}
                               </td>
-                              <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 font-mono break-all whitespace-pre-wrap">
+                              <td className="px-4 py-2.5 text-slate-655 dark:text-slate-355 font-mono break-words whitespace-pre-wrap">
                                 {srv.response || '-'}
                               </td>
                             </tr>

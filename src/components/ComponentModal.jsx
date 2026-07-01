@@ -478,21 +478,21 @@ export default function ComponentModal({ isOpen, onClose, onSave, editingCompone
                         />
                       </td>
                       <td className="px-3 py-2">
-                        <input
-                          type="text"
+                        <textarea
+                          rows={3}
                           placeholder="Ex: { email, senha }"
                           value={srv.request}
                           onChange={(e) => updateServiceRow(srv.id, 'request', e.target.value)}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-mono outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         />
                       </td>
                       <td className="px-3 py-2">
-                        <input
-                          type="text"
+                        <textarea
+                          rows={3}
                           placeholder="Ex: { token, user }"
                           value={srv.response}
                           onChange={(e) => updateServiceRow(srv.id, 'response', e.target.value)}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-mono outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
                         />
                       </td>
                       <td className="px-3 py-2 text-center">
