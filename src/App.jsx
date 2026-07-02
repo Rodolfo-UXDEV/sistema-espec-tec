@@ -1710,11 +1710,12 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setIsBusinessRulesExpanded(!isBusinessRulesExpanded)}
-                    className="flex w-full items-center justify-between p-4 font-display text-sm font-semibold tracking-wide uppercase text-slate-700 hover:bg-slate-50 transition-all dark:text-slate-200"
+                    className="flex w-full items-center justify-between p-4 hover:bg-slate-50 transition-all"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="h-5 w-1 rounded-full bg-indigo-500"></span>
-                      <span>Regras de Negócios</span>
+                      <span className="font-display text-sm font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400">
+                        Regras de Negócios
+                      </span>
                     </div>
                     <svg
                       className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${

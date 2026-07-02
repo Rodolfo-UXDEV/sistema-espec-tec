@@ -187,11 +187,13 @@ export default function ScreenViewer({
               <button
                 type="button"
                 onClick={() => setIsBusinessRulesExpanded(!isBusinessRulesExpanded)}
-                className="flex w-full items-center justify-between p-4 font-display text-sm font-semibold tracking-wide uppercase text-slate-700 hover:bg-slate-50 transition-all dark:text-slate-200"
+                className="flex w-full items-center justify-between p-4 hover:bg-slate-50 transition-all"
               >
                 <div className="flex items-center gap-2">
-                  <span className="h-5 w-1 rounded-full bg-indigo-500"></span>
-                  <span>Regras de Negócios</span>
+                  <span className="h-6 w-1 rounded-full bg-indigo-500"></span>
+                  <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
+                    Regras de Negócios
+                  </h2>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-650 dark:bg-indigo-950/40 dark:text-indigo-400">
