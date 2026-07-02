@@ -958,6 +958,7 @@ export default function App() {
     const newRule = {
       id: `rule-${Date.now()}-${Math.random()}`,
       customId: `RN-${String(nextNum).padStart(2, '0')}`,
+      name: '',
       description: '',
     };
     setSpecBusinessRules([...specBusinessRules, newRule]);
@@ -1091,7 +1092,8 @@ export default function App() {
               <thead>
                 <tr>
                   <th style="width: 15%;">Nº REGRA</th>
-                  <th style="width: 85%;">DESCRIÇÃO DA REGRA</th>
+                  <th style="width: 25%;">NOME DA REGRA</th>
+                  <th style="width: 60%;">DESCRIÇÃO DA REGRA</th>
                 </tr>
               </thead>
               <tbody>
@@ -1100,6 +1102,7 @@ export default function App() {
                     (r, index) => `
                   <tr>
                     <td><strong>${r.customId || `RN-${String(index + 1).padStart(2, '0')}`}</strong></td>
+                    <td><strong>${r.name || ''}</strong></td>
                     <td>${r.description || ''}</td>
                   </tr>
                 `
@@ -1762,15 +1765,16 @@ export default function App() {
                         <table className="w-full min-w-[600px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
                           <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                             <tr>
-                              <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Nº Regra</th>
-                              <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[75%]">Descrição da Regra</th>
+                              <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[12%]">Nº Regra</th>
+                              <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[28%]">Nome Regra</th>
+                              <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[50%]">Descrição Regra</th>
                               <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-left w-[10%]">Ações</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-slate-850 bg-white dark:bg-slate-900">
                             {specBusinessRules.length === 0 ? (
                               <tr>
-                                <td colSpan={3} className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">
+                                <td colSpan={4} className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">
                                   Nenhuma regra de negócios cadastrada. Clique em "+ Adicionar regra" para começar.
                                 </td>
                               </tr>
@@ -1779,6 +1783,15 @@ export default function App() {
                                 <tr key={rule.id || index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                                   <td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">
                                     {rule.customId || `RN-${String(index + 1).padStart(2, '0')}`}
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <input
+                                      type="text"
+                                      value={rule.name || ''}
+                                      onChange={(e) => handleUpdateBusinessRule(index, 'name', e.target.value)}
+                                      placeholder="Ex: Validação de Saldo"
+                                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
+                                    />
                                   </td>
                                   <td className="px-3 py-2">
                                     <textarea

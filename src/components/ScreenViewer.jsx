@@ -218,8 +218,9 @@ export default function ScreenViewer({
                     <table className="w-full border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
                       <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                         <tr>
-                          <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-[15%]">Nº Regra</th>
-                          <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-[85%]">Descrição da Regra</th>
+                          <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-[12%]">Nº Regra</th>
+                          <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-[28%]">Nome da Regra</th>
+                          <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-[60%]">Descrição da Regra</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
@@ -227,6 +228,9 @@ export default function ScreenViewer({
                           <tr key={rule.id || index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                             <td className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-300">
                               {rule.customId || `RN-${String(index + 1).padStart(2, '0')}`}
+                            </td>
+                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
+                              {rule.name || 'Sem nome definido.'}
                             </td>
                             <td className="px-6 py-4 text-slate-650 dark:text-slate-305 whitespace-pre-wrap leading-relaxed">
                               {rule.description || 'Sem descrição inserida.'}
