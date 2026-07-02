@@ -71,6 +71,17 @@ export default function App() {
     }
   });
 
+  // Spec business rules states
+  const [specBusinessRules, setSpecBusinessRules] = useState([]);
+  const [specBusinessRulesMap, setSpecBusinessRulesMap] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('spec_business_rules') || '{}');
+    } catch {
+      return {};
+    }
+  });
+  const [isBusinessRulesExpanded, setIsBusinessRulesExpanded] = useState(false);
+
   // Archive state (localStorage)
   const [archivedIds, setArchivedIds] = useState(() => {
     try {
@@ -270,6 +281,20 @@ export default function App() {
       } else {
         const storedFigmaUrls = JSON.parse(localStorage.getItem('spec_figma_urls') || '{}');
         setSpecFigmaUrl(storedFigmaUrls[id] || '');
+      }
+
+      // Load business rules
+      if (screenData.business_rules) {
+        try {
+          setSpecBusinessRules(JSON.parse(screenData.business_rules));
+        } catch (e) {
+          console.error("Erro ao fazer parse das regras de negócios do Supabase:", e);
+          const storedRules = JSON.parse(localStorage.getItem('spec_business_rules') || '{}');
+          setSpecBusinessRules(storedRules[id] || []);
+        }
+      } else {
+        const storedRules = JSON.parse(localStorage.getItem('spec_business_rules') || '{}');
+        setSpecBusinessRules(storedRules[id] || []);
       }
 
       // 2. Fetch components (both parent screens and child components)
@@ -710,7 +735,8 @@ export default function App() {
             criteria: JSON.stringify(specCriteria),
             figma_url: specFigmaUrl,
             description: specDescription,
-            author: specAuthors[screenId] || pendingAuthor || 'Rodolfo Rodrigues'
+            author: specAuthors[screenId] || pendingAuthor || 'Rodolfo Rodrigues',
+            business_rules: JSON.stringify(specBusinessRules)
           })
           .eq('id', screenId);
         
@@ -732,7 +758,8 @@ export default function App() {
               criteria: JSON.stringify(specCriteria),
               figma_url: specFigmaUrl,
               description: specDescription,
-              author: specAuthors[screenId] || pendingAuthor || 'Rodolfo Rodrigues'
+              author: specAuthors[screenId] || pendingAuthor || 'Rodolfo Rodrigues',
+              business_rules: JSON.stringify(specBusinessRules)
             })
             .eq('id', screenId);
           
@@ -747,7 +774,8 @@ export default function App() {
               criteria: JSON.stringify(specCriteria),
               figma_url: specFigmaUrl,
               description: specDescription,
-              author: pendingAuthor || 'Rodolfo Rodrigues'
+              author: pendingAuthor || 'Rodolfo Rodrigues',
+              business_rules: JSON.stringify(specBusinessRules)
             })
             .select()
             .single();
@@ -780,6 +808,11 @@ export default function App() {
       const updatedCriteria = { ...specCriteriaMap, [screenId]: specCriteria };
       setSpecCriteriaMap(updatedCriteria);
       localStorage.setItem('spec_criteria', JSON.stringify(updatedCriteria));
+
+      // Save business rules mapping
+      const updatedRules = { ...specBusinessRulesMap, [screenId]: specBusinessRules };
+      setSpecBusinessRulesMap(updatedRules);
+      localStorage.setItem('spec_business_rules', JSON.stringify(updatedRules));
 
       // 2. Clean up existing components for this screen to perform a full overwrite
       const { error: deleteCompsErr } = await supabase
@@ -920,6 +953,35 @@ export default function App() {
     });
   };
 
+  const handleAddBusinessRule = () => {
+    const nextNum = specBusinessRules.length + 1;
+    const newRule = {
+      id: `rule-${Date.now()}-${Math.random()}`,
+      customId: `RN-${String(nextNum).padStart(2, '0')}`,
+      description: '',
+    };
+    setSpecBusinessRules([...specBusinessRules, newRule]);
+  };
+
+  const handleUpdateBusinessRule = (index, field, value) => {
+    setSpecBusinessRules(prev => prev.map((item, idx) => {
+      if (idx === index) {
+        return { ...item, [field]: value };
+      }
+      return item;
+    }));
+  };
+
+  const handleRemoveBusinessRule = (index) => {
+    setSpecBusinessRules(prev => {
+      const filtered = prev.filter((_, idx) => idx !== index);
+      return filtered.map((item, idx) => ({
+        ...item,
+        customId: `RN-${String(idx + 1).padStart(2, '0')}`
+      }));
+    });
+  };
+
   const handleOpenRegisterEvidence = (index) => {
     setActiveCriterionIndex(index);
     setEvidenceModalMode('edit');
@@ -1015,11 +1077,39 @@ export default function App() {
             </div>
           </div>
 
-          <div class="section">
-            <h2>Descrição Geral</h2>
-            <p>${specDescription || 'Sem descrição cadastrada.'}</p>
+           <div class="section">
+             <h2>Descrição Geral</h2>
+             <p>${specDescription || 'Sem descrição cadastrada.'}</p>
+           </div>
+         `;
+
+      if (specBusinessRules && specBusinessRules.length > 0) {
+        htmlContent += `
+          <div class="section avoid-break">
+            <h2>Regras de Negócios</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 15%;">Nº REGRA</th>
+                  <th style="width: 85%;">DESCRIÇÃO DA REGRA</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${specBusinessRules
+                  .map(
+                    (r, index) => `
+                  <tr>
+                    <td><strong>${r.customId || `RN-${String(index + 1).padStart(2, '0')}`}</strong></td>
+                    <td>${r.description || ''}</td>
+                  </tr>
+                `
+                  )
+                  .join('')}
+              </tbody>
+            </table>
           </div>
-      `;
+        `;
+      }
 
       if (specFlows && specFlows.length > 0) {
         htmlContent += `
@@ -1314,6 +1404,8 @@ export default function App() {
     setSpecDescription('');
     setSpecCriteria([]);
     setSpecFigmaUrl('');
+    setSpecBusinessRules([]);
+    setIsBusinessRulesExpanded(false);
     setCurrentView('edit');
   };
 
@@ -1427,6 +1519,7 @@ export default function App() {
             specAuthors={specAuthors}
             specCriteria={specCriteria}
             specFigmaUrl={specFigmaUrl}
+            specBusinessRules={specBusinessRules}
             onSelectScreen={(screen) => {
               setActiveScreen(screen);
               setCurrentView('screen-editor');
@@ -1610,6 +1703,111 @@ export default function App() {
                     rows={4}
                     className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
                   />
+                </div>
+
+                {/* Regras de Negócios */}
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsBusinessRulesExpanded(!isBusinessRulesExpanded)}
+                    className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-4 font-display text-sm font-semibold tracking-wide uppercase text-slate-700 shadow-sm hover:bg-slate-50 transition-all dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="h-5 w-1 rounded-full bg-indigo-505"></span>
+                      <span>Regras de Negócios</span>
+                    </div>
+                    <svg
+                      className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${
+                        isBusinessRulesExpanded ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {isBusinessRulesExpanded && (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4 animate-in fade-in duration-200">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+                        <h3 className="font-display text-base font-bold text-slate-800 dark:text-white">
+                          Regras de Negócios Cadastradas
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={handleAddBusinessRule}
+                          className="inline-flex items-center gap-2 rounded-xl bg-indigo-650 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow active:scale-95 duration-200 cursor-pointer"
+                        >
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2.5"
+                              d="M12 4v16m8-8H4"
+                            />
+                          </svg>
+                          Adicionar regra
+                        </button>
+                      </div>
+
+                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                        <table className="w-full min-w-[600px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+                          <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                            <tr>
+                              <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Nº Regra</th>
+                              <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[75%]">Descrição da Regra</th>
+                              <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-left w-[10%]">Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-850 bg-white dark:bg-slate-900">
+                            {specBusinessRules.length === 0 ? (
+                              <tr>
+                                <td colSpan={3} className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">
+                                  Nenhuma regra de negócios cadastrada. Clique em "+ Adicionar regra" para começar.
+                                </td>
+                              </tr>
+                            ) : (
+                              specBusinessRules.map((rule, index) => (
+                                <tr key={rule.id || index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                                  <td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">
+                                    {rule.customId || `RN-${String(index + 1).padStart(2, '0')}`}
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <textarea
+                                      value={rule.description || ''}
+                                      onChange={(e) => handleUpdateBusinessRule(index, 'description', e.target.value)}
+                                      rows={1}
+                                      placeholder="Ex: O usuário só pode solicitar reembolso caso o valor seja superior..."
+                                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200 resize-y"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2 text-left">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveBusinessRule(index)}
+                                      className="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg transition-colors cursor-pointer"
+                                      title="Remover regra"
+                                    >
+                                      <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 3 - Galeria de Fluxos Propostos */}

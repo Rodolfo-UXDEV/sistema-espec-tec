@@ -15,6 +15,7 @@ export default function ScreenViewer({
   specAuthors = {},
   specCriteria = [],
   specFigmaUrl,
+  specBusinessRules = [],
   onSelectScreen,
   onBack,
 }) {
@@ -22,11 +23,13 @@ export default function ScreenViewer({
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false);
   const [activeCriterionIndex, setActiveCriterionIndex] = useState(null);
+  const [isBusinessRulesExpanded, setIsBusinessRulesExpanded] = useState(false);
 
-  // Reset modal state when the selected specification changes
+  // Reset modal and collapse states when the selected specification changes
   useEffect(() => {
     setSelectedComponent(null);
     setIsViewModalOpen(false);
+    setIsBusinessRulesExpanded(false);
   }, [selectedScreenId]);
 
   const handleComponentClick = (screenObj) => {
@@ -175,6 +178,64 @@ export default function ScreenViewer({
               <p className="text-sm text-slate-650 dark:text-slate-300 leading-relaxed bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm whitespace-pre-wrap">
                 {specDescription}
               </p>
+            </div>
+          )}
+
+          {/* Business Rules Display */}
+          {specBusinessRules && specBusinessRules.length > 0 && (
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => setIsBusinessRulesExpanded(!isBusinessRulesExpanded)}
+                className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-4 font-display text-sm font-semibold tracking-wide uppercase text-slate-700 shadow-sm hover:bg-slate-50 transition-all dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="h-5 w-1 rounded-full bg-indigo-500"></span>
+                  <span>Regras de Negócios</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-650 dark:bg-indigo-950/40 dark:text-indigo-400">
+                    {specBusinessRules.length} {specBusinessRules.length === 1 ? 'regra' : 'regras'}
+                  </span>
+                  <svg
+                    className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${
+                      isBusinessRulesExpanded ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+
+              {isBusinessRulesExpanded && (
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 animate-in fade-in duration-200">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+                      <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        <tr>
+                          <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-[15%]">Nº Regra</th>
+                          <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-[85%]">Descrição da Regra</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+                        {specBusinessRules.map((rule, index) => (
+                          <tr key={rule.id || index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                            <td className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-300">
+                              {rule.customId || `RN-${String(index + 1).padStart(2, '0')}`}
+                            </td>
+                            <td className="px-6 py-4 text-slate-650 dark:text-slate-305 whitespace-pre-wrap leading-relaxed">
+                              {rule.description || 'Sem descrição inserida.'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
