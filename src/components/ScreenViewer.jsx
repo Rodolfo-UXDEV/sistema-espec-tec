@@ -183,11 +183,11 @@ export default function ScreenViewer({
 
           {/* Business Rules Display */}
           {specBusinessRules && specBusinessRules.length > 0 && (
-            <div className="space-y-3">
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
               <button
                 type="button"
                 onClick={() => setIsBusinessRulesExpanded(!isBusinessRulesExpanded)}
-                className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-4 font-display text-sm font-semibold tracking-wide uppercase text-slate-700 shadow-sm hover:bg-slate-50 transition-all dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+                className="flex w-full items-center justify-between p-4 font-display text-sm font-semibold tracking-wide uppercase text-slate-700 hover:bg-slate-50 transition-all dark:text-slate-200"
               >
                 <div className="flex items-center gap-2">
                   <span className="h-5 w-1 rounded-full bg-indigo-500"></span>
@@ -211,7 +211,7 @@ export default function ScreenViewer({
               </button>
 
               {isBusinessRulesExpanded && (
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 animate-in fade-in duration-200">
+                <div className="border-t border-slate-100 dark:border-slate-800 animate-in fade-in duration-200">
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
                       <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">

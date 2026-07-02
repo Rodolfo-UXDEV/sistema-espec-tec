@@ -1706,14 +1706,14 @@ export default function App() {
                 </div>
 
                 {/* Regras de Negócios */}
-                <div className="space-y-3">
+                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setIsBusinessRulesExpanded(!isBusinessRulesExpanded)}
-                    className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-4 font-display text-sm font-semibold tracking-wide uppercase text-slate-700 shadow-sm hover:bg-slate-50 transition-all dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+                    className="flex w-full items-center justify-between p-4 font-display text-sm font-semibold tracking-wide uppercase text-slate-700 hover:bg-slate-50 transition-all dark:text-slate-200"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="h-5 w-1 rounded-full bg-indigo-505"></span>
+                      <span className="h-5 w-1 rounded-full bg-indigo-500"></span>
                       <span>Regras de Negócios</span>
                     </div>
                     <svg
@@ -1729,7 +1729,7 @@ export default function App() {
                   </button>
 
                   {isBusinessRulesExpanded && (
-                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4 animate-in fade-in duration-200">
+                    <div className="border-t border-slate-100 p-6 dark:border-slate-800 space-y-4 animate-in fade-in duration-200">
                       <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
                         <h3 className="font-display text-base font-bold text-slate-800 dark:text-white">
                           Regras de Negócios Cadastradas
