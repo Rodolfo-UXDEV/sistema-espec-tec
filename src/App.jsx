@@ -1785,12 +1785,18 @@ export default function App() {
                                     {rule.customId || `RN-${String(index + 1).padStart(2, '0')}`}
                                   </td>
                                   <td className="px-3 py-2">
-                                    <input
-                                      type="text"
+                                    <textarea
                                       value={rule.name || ''}
                                       onChange={(e) => handleUpdateBusinessRule(index, 'name', e.target.value)}
+                                      rows={1}
+                                      ref={(el) => {
+                                        if (el) {
+                                          el.style.height = 'auto';
+                                          el.style.height = `${el.scrollHeight}px`;
+                                        }
+                                      }}
                                       placeholder="Ex: Validação de Saldo"
-                                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
+                                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200 resize-none overflow-hidden"
                                     />
                                   </td>
                                   <td className="px-3 py-2">
@@ -1798,8 +1804,14 @@ export default function App() {
                                       value={rule.description || ''}
                                       onChange={(e) => handleUpdateBusinessRule(index, 'description', e.target.value)}
                                       rows={1}
+                                      ref={(el) => {
+                                        if (el) {
+                                          el.style.height = 'auto';
+                                          el.style.height = `${el.scrollHeight}px`;
+                                        }
+                                      }}
                                       placeholder="Ex: O usuário só pode solicitar reembolso caso o valor seja superior..."
-                                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200 resize-y"
+                                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200 resize-none overflow-hidden"
                                     />
                                   </td>
                                   <td className="px-3 py-2 text-left">
