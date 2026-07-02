@@ -51,6 +51,16 @@ export default function App() {
     }
   });
 
+  // Spec Figma URL states
+  const [specFigmaUrl, setSpecFigmaUrl] = useState('');
+  const [specFigmaUrls, setSpecFigmaUrls] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('spec_figma_urls') || '{}');
+    } catch {
+      return {};
+    }
+  });
+
   // Spec criteria states
   const [specCriteria, setSpecCriteria] = useState([]);
   const [specCriteriaMap, setSpecCriteriaMap] = useState(() => {
@@ -103,12 +113,30 @@ export default function App() {
       // 1. Fetch screens
       const { data: screensData, error: screensErr } = await supabase
         .from('screens')
-        .select('id, name, created_at')
+        .select('id, name, created_at, author, description')
         .order('name');
       
       if (screensErr) throw screensErr;
 
       if (screensData) {
+        // Build author and description mappings dynamically from DB
+        const loadedAuthors = {};
+        const loadedDescriptions = {};
+        screensData.forEach(screen => {
+          if (screen.author) {
+            loadedAuthors[screen.id] = screen.author;
+          }
+          if (screen.description) {
+            loadedDescriptions[screen.id] = screen.description;
+          }
+        });
+
+        const storedAuthors = JSON.parse(localStorage.getItem('spec_authors') || '{}');
+        const storedDescriptions = JSON.parse(localStorage.getItem('spec_descriptions') || '{}');
+
+        setSpecAuthors({ ...storedAuthors, ...loadedAuthors });
+        setSpecDescriptions({ ...storedDescriptions, ...loadedDescriptions });
+
         // 2. Fetch all components to compute specification progress
         const { data: allComps, error: compsErr } = await supabase
           .from('components')
@@ -168,6 +196,7 @@ export default function App() {
       setSpecFlows([]);
       setSpecDescription('');
       setSpecCriteria([]);
+      setSpecFigmaUrl('');
       setDetails([]);
       setSelectedScreenId('');
       return;
@@ -204,8 +233,22 @@ export default function App() {
       setSpecFlows(flowsArray);
 
       // Load description
-      const storedDescriptions = JSON.parse(localStorage.getItem('spec_descriptions') || '{}');
-      setSpecDescription(storedDescriptions[id] || '');
+      if (screenData.description) {
+        setSpecDescription(screenData.description);
+      } else {
+        const storedDescriptions = JSON.parse(localStorage.getItem('spec_descriptions') || '{}');
+        setSpecDescription(storedDescriptions[id] || '');
+      }
+
+      // Load author
+      let loadedAuthor = 'Rodolfo Rodrigues';
+      if (screenData.author) {
+        loadedAuthor = screenData.author;
+      } else {
+        const storedAuthors = JSON.parse(localStorage.getItem('spec_authors') || '{}');
+        loadedAuthor = storedAuthors[id] || 'Rodolfo Rodrigues';
+      }
+      setSpecAuthors(prev => ({ ...prev, [id]: loadedAuthor }));
 
       // Load criteria
       if (screenData.criteria) {
@@ -219,6 +262,14 @@ export default function App() {
       } else {
         const storedCriteria = JSON.parse(localStorage.getItem('spec_criteria') || '{}');
         setSpecCriteria(storedCriteria[id] || []);
+      }
+
+      // Load figma_url
+      if (screenData.figma_url) {
+        setSpecFigmaUrl(screenData.figma_url);
+      } else {
+        const storedFigmaUrls = JSON.parse(localStorage.getItem('spec_figma_urls') || '{}');
+        setSpecFigmaUrl(storedFigmaUrls[id] || '');
       }
 
       // 2. Fetch components (both parent screens and child components)
@@ -240,6 +291,7 @@ export default function App() {
         let actualDescription = comp.description || '';
         let status = 'não desenvolvido';
         let change_history = [];
+        let criteria = [];
         try {
           if (comp.description && comp.description.trim().startsWith('{')) {
             const parsed = JSON.parse(comp.description);
@@ -248,6 +300,9 @@ export default function App() {
               actualDescription = parsed.description || '';
               status = parsed.status || 'não desenvolvido';
               change_history = parsed.change_history || [];
+            } else if (parsed && parsed.type === 'SCREEN_PARENT') {
+              actualDescription = parsed.description || '';
+              criteria = parsed.criteria || [];
             }
           }
         } catch (e) {
@@ -260,6 +315,7 @@ export default function App() {
           description: actualDescription,
           status,
           change_history,
+          criteria,
           image: comp.image_url,
           fields: [],
           services: []
@@ -321,6 +377,7 @@ export default function App() {
           name: screen.name,
           image: screen.image,
           description: screen.description,
+          criteria: screen.criteria || [],
           components: childComps.filter((c) => c.parentScreenId === screen.id)
         };
       });
@@ -358,6 +415,46 @@ export default function App() {
     setIsSaving(true);
     try {
       let screenId = selectedScreenId;
+
+      // 0. Build a status/history map of existing components in the database to preserve them
+      const statusMap = {};
+      if (screenId) {
+        try {
+          const { data: dbComps } = await supabase
+            .from('components')
+            .select('id, name, description')
+            .eq('screen_id', screenId);
+          
+          if (dbComps) {
+            // Find parent screen IDs and their names
+            const parentMap = {};
+            dbComps.forEach(c => {
+              if (c.description === 'SCREEN_PARENT') {
+                parentMap[c.id] = c.name;
+              }
+            });
+
+            // Build statusMap: Key is "ParentScreenName::ComponentName"
+            dbComps.forEach(c => {
+              if (c.description && c.description.trim().startsWith('{')) {
+                try {
+                  const parsed = JSON.parse(c.description);
+                  const parentName = parentMap[parsed.parent_screen_id] || '';
+                  const key = `${parentName}::${c.name}`;
+                  statusMap[key] = {
+                    status: parsed.status,
+                    change_history: parsed.change_history
+                  };
+                } catch (e) {
+                  // Ignore JSON parse errors
+                }
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Erro ao mapear status existentes:', e);
+        }
+      }
 
       // 1. Ensure the specification (screens table) exists
       if (!screenId) {
@@ -440,7 +537,11 @@ export default function App() {
         .insert({
           screen_id: screenId,
           name: savedScreen.name,
-          description: 'SCREEN_PARENT',
+          description: JSON.stringify({
+            type: 'SCREEN_PARENT',
+            description: savedScreen.description || '',
+            criteria: savedScreen.criteria || []
+          }),
           image_url: savedScreen.image,
         })
         .select()
@@ -452,6 +553,11 @@ export default function App() {
       // 4. Insert child components
       if (savedScreen.components && savedScreen.components.length > 0) {
         for (const comp of savedScreen.components) {
+          const key = `${savedScreen.name}::${comp.name}`;
+          const preserved = statusMap[key] || {};
+          const status = comp.status || preserved.status || 'não desenvolvido';
+          const change_history = comp.change_history || preserved.change_history || [];
+
           const { data: insertedComp, error: compInsertErr } = await supabase
             .from('components')
             .insert({
@@ -460,8 +566,8 @@ export default function App() {
               description: JSON.stringify({ 
                 parent_screen_id: newScreenParentId, 
                 description: comp.description,
-                status: comp.status || 'não desenvolvido',
-                change_history: comp.change_history || []
+                status,
+                change_history
               }),
               image_url: comp.image,
             })
@@ -514,6 +620,7 @@ export default function App() {
       const updatedScreenObj = {
         ...savedScreen,
         id: newScreenParentId,
+        criteria: savedScreen.criteria || []
       };
 
       const exists = details.some((item) => item.id === savedScreen.id);
@@ -549,6 +656,47 @@ export default function App() {
     setIsSaving(true);
     try {
       let screenId = selectedScreenId;
+
+      // 0. Build a status/history map of existing components in the database to preserve them
+      const statusMap = {};
+      if (screenId) {
+        try {
+          const { data: dbComps } = await supabase
+            .from('components')
+            .select('id, name, description')
+            .eq('screen_id', screenId);
+          
+          if (dbComps) {
+            // Find parent screen IDs and their names
+            const parentMap = {};
+            dbComps.forEach(c => {
+              if (c.description === 'SCREEN_PARENT') {
+                parentMap[c.id] = c.name;
+              }
+            });
+
+            // Build statusMap: Key is "ParentScreenName::ComponentName"
+            dbComps.forEach(c => {
+              if (c.description && c.description.trim().startsWith('{')) {
+                try {
+                  const parsed = JSON.parse(c.description);
+                  const parentName = parentMap[parsed.parent_screen_id] || '';
+                  const key = `${parentName}::${c.name}`;
+                  statusMap[key] = {
+                    status: parsed.status,
+                    change_history: parsed.change_history
+                  };
+                } catch (e) {
+                  // Ignore JSON parse errors
+                }
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Erro ao mapear status existentes:', e);
+        }
+      }
+
       const imageValue = JSON.stringify(specFlows);
 
       // 1. Check if the screen already exists by ID or by name
@@ -556,7 +704,14 @@ export default function App() {
         // Update screen
         const { error: updateErr } = await supabase
           .from('screens')
-          .update({ name: screenName, image_url: imageValue, criteria: JSON.stringify(specCriteria) })
+          .update({
+            name: screenName,
+            image_url: imageValue,
+            criteria: JSON.stringify(specCriteria),
+            figma_url: specFigmaUrl,
+            description: specDescription,
+            author: specAuthors[screenId] || pendingAuthor || 'Rodolfo Rodrigues'
+          })
           .eq('id', screenId);
         
         if (updateErr) throw updateErr;
@@ -572,7 +727,13 @@ export default function App() {
           screenId = existingScreen.id;
           const { error: updateErr } = await supabase
             .from('screens')
-            .update({ image_url: imageValue, criteria: JSON.stringify(specCriteria) })
+            .update({
+              image_url: imageValue,
+              criteria: JSON.stringify(specCriteria),
+              figma_url: specFigmaUrl,
+              description: specDescription,
+              author: specAuthors[screenId] || pendingAuthor || 'Rodolfo Rodrigues'
+            })
             .eq('id', screenId);
           
           if (updateErr) throw updateErr;
@@ -580,7 +741,14 @@ export default function App() {
           // Insert new screen
           const { data: newScreen, error: insertErr } = await supabase
             .from('screens')
-            .insert({ name: screenName, image_url: imageValue, criteria: JSON.stringify(specCriteria) })
+            .insert({
+              name: screenName,
+              image_url: imageValue,
+              criteria: JSON.stringify(specCriteria),
+              figma_url: specFigmaUrl,
+              description: specDescription,
+              author: pendingAuthor || 'Rodolfo Rodrigues'
+            })
             .select()
             .single();
           
@@ -603,6 +771,11 @@ export default function App() {
       setSpecDescriptions(updatedDescriptions);
       localStorage.setItem('spec_descriptions', JSON.stringify(updatedDescriptions));
 
+      // Save figma URL mapping
+      const updatedFigmaUrls = { ...specFigmaUrls, [screenId]: specFigmaUrl };
+      setSpecFigmaUrls(updatedFigmaUrls);
+      localStorage.setItem('spec_figma_urls', JSON.stringify(updatedFigmaUrls));
+
       // Save criteria mapping
       const updatedCriteria = { ...specCriteriaMap, [screenId]: specCriteria };
       setSpecCriteriaMap(updatedCriteria);
@@ -624,7 +797,11 @@ export default function App() {
           .insert({
             screen_id: screenId,
             name: screenObj.name,
-            description: 'SCREEN_PARENT',
+            description: JSON.stringify({
+              type: 'SCREEN_PARENT',
+              description: screenObj.description || '',
+              criteria: screenObj.criteria || []
+            }),
             image_url: screenObj.image,
           })
           .select()
@@ -636,12 +813,22 @@ export default function App() {
         // 3.2 Insert child components for this screen
         if (screenObj.components && screenObj.components.length > 0) {
           for (const comp of screenObj.components) {
+            const key = `${screenObj.name}::${comp.name}`;
+            const preserved = statusMap[key] || {};
+            const status = comp.status || preserved.status || 'não desenvolvido';
+            const change_history = comp.change_history || preserved.change_history || [];
+
             const { data: insertedComp, error: compInsertErr } = await supabase
               .from('components')
               .insert({
                 screen_id: screenId,
                 name: comp.name,
-                description: JSON.stringify({ parent_screen_id: newScreenParentId, description: comp.description }),
+                description: JSON.stringify({ 
+                  parent_screen_id: newScreenParentId, 
+                  description: comp.description,
+                  status,
+                  change_history
+                }),
                 image_url: comp.image,
               })
               .select()
@@ -841,6 +1028,15 @@ export default function App() {
             <div class="image-gallery">
               ${specFlows.map((flow) => `<img src="${flow}" alt="Fluxo Proposto">`).join('')}
             </div>
+          </div>
+        `;
+      }
+
+      if (specFigmaUrl) {
+        htmlContent += `
+          <div class="section">
+            <h2>Design do Figma</h2>
+            <p><a href="${specFigmaUrl}" target="_blank" style="color: #4f46e5; text-decoration: underline; font-weight: bold;">${specFigmaUrl}</a></p>
           </div>
         `;
       }
@@ -1117,6 +1313,7 @@ export default function App() {
     setSpecFlows([]);
     setSpecDescription('');
     setSpecCriteria([]);
+    setSpecFigmaUrl('');
     setCurrentView('edit');
   };
 
@@ -1229,6 +1426,7 @@ export default function App() {
             specFlows={specFlows}
             specAuthors={specAuthors}
             specCriteria={specCriteria}
+            specFigmaUrl={specFigmaUrl}
             onSelectScreen={(screen) => {
               setActiveScreen(screen);
               setCurrentView('screen-editor');
@@ -1420,6 +1618,41 @@ export default function App() {
                     Fluxos Propostos
                   </label>
                   <FlowsGallery flows={specFlows} onChange={setSpecFlows} />
+                </div>
+
+                {/* 3.5 - Figma Link and Preview Section */}
+                <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
+                    <span className="h-5 w-1 rounded-full bg-indigo-500"></span>
+                    <label className="font-display text-sm font-semibold tracking-wide uppercase text-slate-800 dark:text-slate-200">
+                      Link do Figma
+                    </label>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <input
+                      type="text"
+                      placeholder="Cole aqui o link do design ou protótipo do Figma (ex: https://www.figma.com/file/...)"
+                      value={specFigmaUrl}
+                      onChange={(e) => setSpecFigmaUrl(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-200"
+                    />
+                    
+                    {specFigmaUrl && (
+                      <div className="mt-2 space-y-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                          Pré-visualização do Figma
+                        </span>
+                        <div className="relative w-full h-[450px] overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-955/20">
+                          <iframe
+                            className="absolute inset-0 h-full w-full border-0"
+                            src={`https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(specFigmaUrl)}`}
+                            allowFullScreen
+                            title="Figma Preview"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* 4 & 5 - Seção Detalhamento das Telas e Lista de Telas */}

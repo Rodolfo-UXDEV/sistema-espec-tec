@@ -14,6 +14,7 @@ export default function ScreenViewer({
   specFlows = [],
   specAuthors = {},
   specCriteria = [],
+  specFigmaUrl,
   onSelectScreen,
   onBack,
 }) {
@@ -187,6 +188,26 @@ export default function ScreenViewer({
                 </h2>
               </div>
               <FlowsGallery flows={specFlows} readOnly={true} />
+            </div>
+          )}
+
+          {/* Figma Embed display */}
+          {specFigmaUrl && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="h-6 w-1 rounded-full bg-indigo-500"></span>
+                <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
+                  Design do Figma
+                </h2>
+              </div>
+              <div className="w-full h-[450px] overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+                <iframe
+                  className="h-full w-full border-0"
+                  src={`https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(specFigmaUrl)}`}
+                  allowFullScreen
+                  title="Figma Viewer"
+                />
+              </div>
             </div>
           )}
 

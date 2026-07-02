@@ -1,12 +1,60 @@
 import React, { useState } from 'react';
 import ImageUploader from './ImageUploader';
 import ComponentModal from './ComponentModal';
+import EvidenceModal from './EvidenceModal';
 
 export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
   const [currentScreen, setCurrentScreen] = useState(screen);
   const [name, setName] = useState(screen ? screen.name : '');
   const [image, setImage] = useState(screen ? screen.image : null);
   const [components, setComponents] = useState(screen && screen.components ? screen.components : []);
+  const [screenCriteria, setScreenCriteria] = useState(screen && screen.criteria ? screen.criteria : []);
+
+  const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false);
+  const [evidenceModalMode, setEvidenceModalMode] = useState('edit'); // 'edit' or 'view'
+  const [activeCriterionIndex, setActiveCriterionIndex] = useState(null);
+
+  const handleAddCriterion = () => {
+    const nextNum = screenCriteria.length + 1;
+    const newCriterion = {
+      id: `new-${Date.now()}-${Math.random()}`,
+      customId: `CA-TELA-${String(nextNum).padStart(2, '0')}`,
+      criterion: '',
+      status: 'Pendente',
+      responsible: '',
+      evidence: '',
+    };
+    setScreenCriteria([...screenCriteria, newCriterion]);
+  };
+
+  const handleUpdateCriterion = (index, field, value) => {
+    const updated = [...screenCriteria];
+    updated[index] = { ...updated[index], [field]: value };
+    setScreenCriteria(updated);
+  };
+
+  const handleRemoveCriterion = (index) => {
+    setScreenCriteria(screenCriteria.filter((_, idx) => idx !== index));
+  };
+
+  const handleOpenRegisterEvidence = (index) => {
+    setActiveCriterionIndex(index);
+    setEvidenceModalMode('edit');
+    setIsEvidenceModalOpen(true);
+  };
+
+  const handleOpenViewEvidence = (index) => {
+    setActiveCriterionIndex(index);
+    setEvidenceModalMode('view');
+    setIsEvidenceModalOpen(true);
+  };
+
+  const handleSaveEvidence = (evidenceValue) => {
+    if (activeCriterionIndex !== null) {
+      handleUpdateCriterion(activeCriterionIndex, 'evidence', evidenceValue);
+    }
+    setIsEvidenceModalOpen(false);
+  };
 
   const totalComps = components.length;
   const completedComps = components.filter((c) => c.status === 'concluido').length;
@@ -87,6 +135,7 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
       name: name.trim(),
       image,
       components,
+      criteria: screenCriteria,
     });
     if (result) {
       setCurrentScreen(result);
@@ -476,6 +525,147 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
         </div>
       </div>
 
+      {/* Critérios de Aceite da Tela */}
+      <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+          <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
+            Critérios de Aceite da Tela
+          </h2>
+          <button
+            type="button"
+            onClick={handleAddCriterion}
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-650 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow active:scale-95 duration-200 cursor-pointer"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2.5"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Adicionar critério
+          </button>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+          <table className="w-full min-w-[900px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+            <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              <tr>
+                <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[50%]">CRITÉRIO</th>
+                <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">STATUS</th>
+                <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">RESPONSÁVEL</th>
+                <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">EVIDÊNCIA</th>
+                <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-left w-[5%]">AÇÕES</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-850 bg-white dark:bg-slate-900">
+              {screenCriteria.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-sm text-slate-400 dark:text-slate-500">
+                    Nenhum critério de aceite cadastrado para esta tela. Clique em "+ Adicionar critério" para começar.
+                  </td>
+                </tr>
+              ) : (
+                screenCriteria.map((criterion, index) => (
+                  <tr key={criterion.id || index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                    <td className="px-3 py-2">
+                      <textarea
+                        value={criterion.criterion || ''}
+                        onChange={(e) => handleUpdateCriterion(index, 'criterion', e.target.value)}
+                        rows={1}
+                        placeholder="Ex: O botão de login deve ficar desabilitado até preencher..."
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200 resize-y"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={criterion.status || 'Pendente'}
+                        onChange={(e) => handleUpdateCriterion(index, 'status', e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+                      >
+                        <option value="Pendente">Pendente</option>
+                        <option value="Em Desenvolvimento">Em Desenvolvimento</option>
+                        <option value="Concluído">Concluído</option>
+                        <option value="Bloqueado">Bloqueado</option>
+                      </select>
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        type="text"
+                        value={criterion.responsible || ''}
+                        onChange={(e) => handleUpdateCriterion(index, 'responsible', e.target.value)}
+                        placeholder="Responsável..."
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-750 dark:bg-slate-800 dark:text-slate-200"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex items-center justify-start gap-1.5">
+                        {/* Visualizar Evidência */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (criterion.evidence && criterion.evidence.trim()) {
+                              handleOpenViewEvidence(index);
+                            }
+                          }}
+                          disabled={!criterion.evidence || !criterion.evidence.trim()}
+                          className={`p-1.5 rounded-lg transition-all active:scale-90 ${
+                            criterion.evidence && criterion.evidence.trim()
+                              ? "text-indigo-655 hover:bg-indigo-50 hover:text-indigo-750 dark:text-indigo-400 dark:hover:bg-indigo-950/40 cursor-pointer"
+                              : "text-slate-300 dark:text-slate-750 cursor-not-allowed"
+                          }`}
+                          title="Visualizar Evidência"
+                        >
+                          <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+
+                        {/* Cadastrar Evidência */}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenRegisterEvidence(index)}
+                          className={`p-1.5 rounded-lg transition-all active:scale-90 cursor-pointer ${
+                            criterion.evidence && criterion.evidence.trim()
+                              ? "text-emerald-655 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-955/40"
+                              : "text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-450 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                          }`}
+                          title="Cadastrar / Editar Evidência"
+                        >
+                          <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m-9 1V4a2 2 0 012-2h6l2 2h7a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 text-left">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCriterion(index)}
+                        className="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg transition-colors cursor-pointer"
+                        title="Remover critério"
+                      >
+                        <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Save Button */}
       <div className="flex justify-end pt-4">
         <button
@@ -614,6 +804,19 @@ export default function ScreenEditor({ screen, onSave, onBack, isSaving }) {
           </div>
         </div>
       )}
+
+      {/* Evidence Modal for Screen Criteria */}
+      <EvidenceModal
+        isOpen={isEvidenceModalOpen}
+        onClose={() => {
+          setIsEvidenceModalOpen(false);
+          setActiveCriterionIndex(null);
+        }}
+        onSave={handleSaveEvidence}
+        evidence={activeCriterionIndex !== null ? screenCriteria[activeCriterionIndex].evidence : ''}
+        criterionId={activeCriterionIndex !== null ? screenCriteria[activeCriterionIndex].customId : ''}
+        mode={evidenceModalMode}
+      />
     </div>
   );
 }
