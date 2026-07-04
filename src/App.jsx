@@ -10,6 +10,7 @@ import ScreenEditor from './components/ScreenEditor';
 import ScreenReadOnlyView from './components/ScreenReadOnlyView';
 import LandingPage from './components/LandingPage';
 import EvidenceModal from './components/EvidenceModal';
+import FunctionalRequirementsSection from './components/FunctionalRequirementsSection';
 import { supabase } from './supabaseClient';
 import './App.css';
 
@@ -29,6 +30,8 @@ export default function App() {
   const [selectedScreenId, setSelectedScreenId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [projectsList, setProjectsList] = useState([]);
+  const [specProjectId, setSpecProjectId] = useState(null);
 
   // Spec authors state (localStorage)
   const [specAuthors, setSpecAuthors] = useState(() => {
@@ -82,6 +85,17 @@ export default function App() {
   });
   const [isBusinessRulesExpanded, setIsBusinessRulesExpanded] = useState(false);
 
+  // Spec functional requirements states
+  const [specFunctionalRequirements, setSpecFunctionalRequirements] = useState([]);
+  const [specFunctionalRequirementsMap, setSpecFunctionalRequirementsMap] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('spec_functional_requirements') || '{}');
+    } catch {
+      return {};
+    }
+  });
+  const [isFunctionalRequirementsExpanded, setIsFunctionalRequirementsExpanded] = useState(false);
+
   // Archive state (localStorage)
   const [archivedIds, setArchivedIds] = useState(() => {
     try {
@@ -104,10 +118,56 @@ export default function App() {
   const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
   const [showSaveSuccessModal, setShowSaveSuccessModal] = useState(false);
 
-  // Fetch screens on mount and view changes
+  const fetchProjectsList = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      setProjectsList(data || []);
+    } catch (e) {
+      console.error('Erro ao buscar projetos:', e);
+    }
+  };
+
+  const handleNewProject = async (name, description) => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .insert({ name, description })
+        .select()
+        .single();
+      if (error) throw error;
+      await fetchProjectsList();
+      return data;
+    } catch (err) {
+      alert('Erro ao criar projeto: ' + err.message);
+      return null;
+    }
+  };
+
+  const handleAssociateSpecsToProject = async (projectId, specIds) => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('screens')
+        .update({ project_id: projectId })
+        .in('id', specIds);
+      if (error) throw error;
+      await fetchScreensList();
+    } catch (err) {
+      alert('Erro ao associar especificações: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch screens and projects on mount and view changes
   useEffect(() => {
-    if (currentView === 'home') {
+    if (currentView === 'home' || currentView === 'edit') {
       fetchScreensList();
+      fetchProjectsList();
     }
   }, [currentView]);
 
@@ -124,7 +184,7 @@ export default function App() {
       // 1. Fetch screens
       const { data: screensData, error: screensErr } = await supabase
         .from('screens')
-        .select('id, name, created_at, author, description')
+        .select('id, name, created_at, author, description, project_id')
         .order('name');
       
       if (screensErr) throw screensErr;
@@ -227,6 +287,7 @@ export default function App() {
       setScreenName(screenData.name);
       setImage(screenData.image_url);
       setSelectedScreenId(screenData.id);
+      setSpecProjectId(screenData.project_id || null);
 
       // Parse flows from image_url
       let flowsArray = [];
@@ -297,6 +358,20 @@ export default function App() {
         setSpecBusinessRules(storedRules[id] || []);
       }
 
+      // Load functional requirements
+      if (screenData.functional_requirements) {
+        try {
+          setSpecFunctionalRequirements(JSON.parse(screenData.functional_requirements));
+        } catch (e) {
+          console.error("Erro ao fazer parse dos requisitos funcionais do Supabase:", e);
+          const storedReqs = JSON.parse(localStorage.getItem('spec_functional_requirements') || '{}');
+          setSpecFunctionalRequirements(storedReqs[id] || []);
+        }
+      } else {
+        const storedReqs = JSON.parse(localStorage.getItem('spec_functional_requirements') || '{}');
+        setSpecFunctionalRequirements(storedReqs[id] || []);
+      }
+
       // 2. Fetch components (both parent screens and child components)
       const { data: compsData, error: compsErr } = await supabase
         .from('components')
@@ -317,6 +392,8 @@ export default function App() {
         let status = 'não desenvolvido';
         let change_history = [];
         let criteria = [];
+        let functionalRequirements = [];
+        let flows = [];
         try {
           if (comp.description && comp.description.trim().startsWith('{')) {
             const parsed = JSON.parse(comp.description);
@@ -328,6 +405,8 @@ export default function App() {
             } else if (parsed && parsed.type === 'SCREEN_PARENT') {
               actualDescription = parsed.description || '';
               criteria = parsed.criteria || [];
+              functionalRequirements = parsed.functionalRequirements || [];
+              flows = parsed.flows || [];
             }
           }
         } catch (e) {
@@ -341,6 +420,8 @@ export default function App() {
           status,
           change_history,
           criteria,
+          functionalRequirements,
+          flows,
           image: comp.image_url,
           fields: [],
           services: []
@@ -403,6 +484,8 @@ export default function App() {
           image: screen.image,
           description: screen.description,
           criteria: screen.criteria || [],
+          functionalRequirements: screen.functionalRequirements || [],
+          flows: screen.flows || [],
           components: childComps.filter((c) => c.parentScreenId === screen.id)
         };
       });
@@ -502,7 +585,7 @@ export default function App() {
         } else {
           const { data: newScreen, error: insertErr } = await supabase
             .from('screens')
-            .insert({ name: screenName, image_url: JSON.stringify(specFlows) })
+            .insert({ name: screenName, image_url: JSON.stringify(specFlows), project_id: specProjectId })
             .select()
             .single();
           
@@ -514,7 +597,7 @@ export default function App() {
         // Update the specification name / flows if necessary
         const { error: updateErr } = await supabase
           .from('screens')
-          .update({ name: screenName, image_url: JSON.stringify(specFlows) })
+          .update({ name: screenName, image_url: JSON.stringify(specFlows), project_id: specProjectId })
           .eq('id', screenId);
         
         if (updateErr) throw updateErr;
@@ -565,7 +648,9 @@ export default function App() {
           description: JSON.stringify({
             type: 'SCREEN_PARENT',
             description: savedScreen.description || '',
-            criteria: savedScreen.criteria || []
+            criteria: savedScreen.criteria || [],
+            functionalRequirements: savedScreen.functionalRequirements || [],
+            flows: savedScreen.flows || []
           }),
           image_url: savedScreen.image,
         })
@@ -736,7 +821,9 @@ export default function App() {
             figma_url: specFigmaUrl,
             description: specDescription,
             author: specAuthors[screenId] || pendingAuthor || 'Rodolfo Rodrigues',
-            business_rules: JSON.stringify(specBusinessRules)
+            business_rules: JSON.stringify(specBusinessRules),
+            functional_requirements: JSON.stringify(specFunctionalRequirements),
+            project_id: specProjectId
           })
           .eq('id', screenId);
         
@@ -759,7 +846,9 @@ export default function App() {
               figma_url: specFigmaUrl,
               description: specDescription,
               author: specAuthors[screenId] || pendingAuthor || 'Rodolfo Rodrigues',
-              business_rules: JSON.stringify(specBusinessRules)
+              business_rules: JSON.stringify(specBusinessRules),
+              functional_requirements: JSON.stringify(specFunctionalRequirements),
+              project_id: specProjectId
             })
             .eq('id', screenId);
           
@@ -775,7 +864,9 @@ export default function App() {
               figma_url: specFigmaUrl,
               description: specDescription,
               author: pendingAuthor || 'Rodolfo Rodrigues',
-              business_rules: JSON.stringify(specBusinessRules)
+              business_rules: JSON.stringify(specBusinessRules),
+              functional_requirements: JSON.stringify(specFunctionalRequirements),
+              project_id: specProjectId
             })
             .select()
             .single();
@@ -814,6 +905,11 @@ export default function App() {
       setSpecBusinessRulesMap(updatedRules);
       localStorage.setItem('spec_business_rules', JSON.stringify(updatedRules));
 
+      // Save functional requirements mapping
+      const updatedReqs = { ...specFunctionalRequirementsMap, [screenId]: specFunctionalRequirements };
+      setSpecFunctionalRequirementsMap(updatedReqs);
+      localStorage.setItem('spec_functional_requirements', JSON.stringify(updatedReqs));
+
       // 2. Clean up existing components for this screen to perform a full overwrite
       const { error: deleteCompsErr } = await supabase
         .from('components')
@@ -833,7 +929,9 @@ export default function App() {
             description: JSON.stringify({
               type: 'SCREEN_PARENT',
               description: screenObj.description || '',
-              criteria: screenObj.criteria || []
+              criteria: screenObj.criteria || [],
+              functionalRequirements: screenObj.functionalRequirements || [],
+              flows: screenObj.flows || []
             }),
             image_url: screenObj.image,
           })
@@ -1114,6 +1212,36 @@ export default function App() {
         `;
       }
 
+      if (specFunctionalRequirements && specFunctionalRequirements.length > 0) {
+        htmlContent += `
+          <div class="section avoid-break">
+            <h2>Requisitos Funcionais</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 15%;">Nº REQUISITO</th>
+                  <th style="width: 25%;">NOME DO REQUISITO</th>
+                  <th style="width: 60%;">DESCRIÇÃO DO REQUISITO</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${specFunctionalRequirements
+                  .map(
+                    (r, index) => `
+                  <tr>
+                    <td><strong>${r.customId || `RF-${String(index + 1).padStart(2, '0')}`}</strong></td>
+                    <td><strong>${r.name || ''}</strong></td>
+                    <td>${r.description || ''}</td>
+                  </tr>
+                `
+                  )
+                  .join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+
       if (specFlows && specFlows.length > 0) {
         htmlContent += `
           <div class="section">
@@ -1208,6 +1336,55 @@ export default function App() {
               <div style="margin-bottom: 20px;">
                 <strong>Mock-up da Tela:</strong><br/>
                 <img src="${screen.image}" alt="${screen.name}" style="max-width: 100%; max-height: 300px; margin-top: 8px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px;">
+              </div>
+            `;
+          }
+
+          if (screen.flows && screen.flows.length > 0) {
+            htmlContent += `
+              <div style="margin-bottom: 20px;">
+                <strong>Fluxo de Tela:</strong><br/>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
+                  ${screen.flows
+                    .map(
+                      (flow, idx) => `
+                    <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px; background-color: #ffffff;">
+                      <img src="${flow}" alt="Fluxo ${idx + 1}" style="max-height: 120px; object-fit: contain;">
+                    </div>
+                  `
+                    )
+                    .join('')}
+                </div>
+              </div>
+            `;
+          }
+
+          if (screen.functionalRequirements && screen.functionalRequirements.length > 0) {
+            htmlContent += `
+              <div style="margin-bottom: 20px;">
+                <strong>Requisitos Funcionais da Tela:</strong>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 8px; border: 1px solid #e2e8f0;">
+                  <thead>
+                    <tr style="background-color: #f8fafc;">
+                      <th style="width: 20%; text-align: left; padding: 8px; font-size: 11px; border-bottom: 1.5px solid #cbd5e1; font-weight: 700; color: #475569;">Nº REQUISITO</th>
+                      <th style="width: 30%; text-align: left; padding: 8px; font-size: 11px; border-bottom: 1.5px solid #cbd5e1; font-weight: 700; color: #475569;">NOME</th>
+                      <th style="width: 50%; text-align: left; padding: 8px; font-size: 11px; border-bottom: 1.5px solid #cbd5e1; font-weight: 700; color: #475569;">DESCRIÇÃO</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${screen.functionalRequirements
+                      .map(
+                        (r) => `
+                      <tr>
+                        <td style="padding: 8px; font-size: 11px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #334155;">${r.customId || ''}</td>
+                        <td style="padding: 8px; font-size: 11px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #0f172a;">${r.name || ''}</td>
+                        <td style="padding: 8px; font-size: 11px; border-bottom: 1px solid #e2e8f0; color: #475569;">${r.description || ''}</td>
+                      </tr>
+                    `
+                      )
+                      .join('')}
+                  </tbody>
+                </table>
               </div>
             `;
           }
@@ -1397,18 +1574,21 @@ export default function App() {
     setCurrentView('view');
   };
 
-  const handleNewScreen = (name, author) => {
+  const handleNewScreen = (name, author, projectId = null) => {
     setScreenName(name);
     setImage(null);
     setDetails([]);
     setSelectedScreenId('');
     setPendingAuthor(author);
+    setSpecProjectId(projectId);
     setSpecFlows([]);
     setSpecDescription('');
     setSpecCriteria([]);
     setSpecFigmaUrl('');
     setSpecBusinessRules([]);
     setIsBusinessRulesExpanded(false);
+    setSpecFunctionalRequirements([]);
+    setIsFunctionalRequirementsExpanded(false);
     setCurrentView('edit');
   };
 
@@ -1497,9 +1677,12 @@ export default function App() {
         ) : currentView === 'home' ? (
           <SpecificationList
             screensList={screensList}
+            projectsList={projectsList}
             onEdit={handleEditScreen}
             onView={handleViewScreen}
             onNew={handleNewScreen}
+            onNewProject={handleNewProject}
+            onAssociateSpecs={handleAssociateSpecsToProject}
             onArchive={handleArchive}
             onUnarchive={handleUnarchive}
             archivedIds={archivedIds}
@@ -1523,6 +1706,7 @@ export default function App() {
             specCriteria={specCriteria}
             specFigmaUrl={specFigmaUrl}
             specBusinessRules={specBusinessRules}
+            specFunctionalRequirements={specFunctionalRequirements}
             onSelectScreen={(screen) => {
               setActiveScreen(screen);
               setCurrentView('screen-editor');
@@ -1563,6 +1747,7 @@ export default function App() {
               onSave={handleSaveScreen}
               onBack={() => setCurrentView('edit')}
               isSaving={isSaving}
+              specFunctionalRequirements={specFunctionalRequirements}
             />
           )
         ) : (
@@ -1602,7 +1787,7 @@ export default function App() {
               {/* Specification Metadata Grid (Nome, Data Criacao, Autor, Progresso) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 {/* Nome da Especificação */}
-                <div className="flex flex-col gap-1.5 md:col-span-3">
+                <div className="flex flex-col gap-1.5 md:col-span-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-555 dark:text-slate-400">
                     Nome da Especificação
                   </label>
@@ -1613,6 +1798,25 @@ export default function App() {
                     onChange={(e) => setScreenName(e.target.value)}
                     className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-955/60 dark:text-slate-200"
                   />
+                </div>
+
+                {/* Projeto Associado */}
+                <div className="flex flex-col gap-1.5 md:col-span-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-555 dark:text-slate-400">
+                    Projeto Associado
+                  </label>
+                  <select
+                    value={specProjectId || ''}
+                    onChange={(e) => setSpecProjectId(e.target.value || null)}
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-955/60 dark:text-slate-200 cursor-pointer"
+                  >
+                    <option value="">-- Sem projeto (Avulsa) --</option>
+                    {projectsList.map((proj) => (
+                      <option key={proj.id} value={proj.id}>
+                        {proj.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Data de Criação */}
@@ -1696,9 +1900,9 @@ export default function App() {
               <div className="space-y-8">
                 {/* 2 - Campo de Descrição da Especificação */}
                 <div className="space-y-3">
-                  <label className="font-display text-sm font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400">
+                  <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
                     Descrição da Especificação
-                  </label>
+                  </h2>
                   <textarea
                     placeholder="Escreva uma descrição detalhada dos objetivos desta especificação técnica..."
                     value={specDescription}
@@ -1713,23 +1917,30 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setIsBusinessRulesExpanded(!isBusinessRulesExpanded)}
-                    className="flex w-full items-center justify-between p-4 hover:bg-slate-50 transition-all"
+                    className="flex w-full items-center justify-between p-6 hover:bg-slate-50 transition-all"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-display text-sm font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400">
+                      <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
                         Regras de Negócios
-                      </span>
+                      </h2>
                     </div>
-                    <svg
-                      className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${
-                        isBusinessRulesExpanded ? 'rotate-180' : ''
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <div className="flex items-center gap-3">
+                      {specBusinessRules.length > 0 && (
+                        <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-650 dark:bg-indigo-950/40 dark:text-indigo-400">
+                          {specBusinessRules.length} {specBusinessRules.length === 1 ? 'regra' : 'regras'}
+                        </span>
+                      )}
+                      <svg
+                        className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${
+                          isBusinessRulesExpanded ? 'rotate-180' : ''
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
                   </button>
 
                   {isBusinessRulesExpanded && (
@@ -1836,21 +2047,28 @@ export default function App() {
                   )}
                 </div>
 
+                {/* Requisitos Funcionais */}
+                <FunctionalRequirementsSection
+                  requirements={specFunctionalRequirements}
+                  onChange={setSpecFunctionalRequirements}
+                  isExpanded={isFunctionalRequirementsExpanded}
+                  onToggleExpand={() => setIsFunctionalRequirementsExpanded(!isFunctionalRequirementsExpanded)}
+                />
+
                 {/* 3 - Galeria de Fluxos Propostos */}
                 <div className="space-y-3">
-                  <label className="font-display text-sm font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400">
+                  <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
                     Fluxos Propostos
-                  </label>
+                  </h2>
                   <FlowsGallery flows={specFlows} onChange={setSpecFlows} />
                 </div>
 
                 {/* 3.5 - Figma Link and Preview Section */}
                 <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
-                    <span className="h-5 w-1 rounded-full bg-indigo-500"></span>
-                    <label className="font-display text-sm font-semibold tracking-wide uppercase text-slate-800 dark:text-slate-200">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+                    <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
                       Link do Figma
-                    </label>
+                    </h2>
                   </div>
                   <div className="flex flex-col gap-3">
                     <input

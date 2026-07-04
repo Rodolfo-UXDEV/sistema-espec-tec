@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import EvidenceModal from './EvidenceModal';
+import FlowsGallery from './FlowsGallery';
 
 export default function ScreenReadOnlyView({ screen, onBack, onComponentStatusToggle }) {
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [activeTab, setActiveTab] = useState('general'); // 'general', 'fields', 'services'
   const [localComponents, setLocalComponents] = useState([]);
-  const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false);
-  const [activeCriterionIndex, setActiveCriterionIndex] = useState(null);
 
   useEffect(() => {
     if (screen && screen.components) {
@@ -169,6 +167,53 @@ export default function ScreenReadOnlyView({ screen, onBack, onComponentStatusTo
         )}
       </div>
 
+      {/* Fluxo de Tela */}
+      {screen && screen.flows && screen.flows.length > 0 && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-3">
+          <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
+            Fluxo de Tela
+          </h2>
+          <FlowsGallery flows={screen.flows} readOnly={true} />
+        </div>
+      )}
+
+      {/* Requisitos Funcionais da Tela */}
+      {screen && screen.functionalRequirements && screen.functionalRequirements.length > 0 && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="border-b border-slate-100 pb-4 dark:border-slate-800 mb-4">
+            <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
+              Requisitos Funcionais da Tela
+            </h2>
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table className="w-full min-w-[600px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+              <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                <tr>
+                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">Nº Requisito</th>
+                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[25%]">Nome Requisito</th>
+                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[60%]">Descrição Requisito</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-850 bg-white dark:bg-slate-900">
+                {screen.functionalRequirements.map((req, index) => (
+                  <tr key={req.id || index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                    <td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">
+                      {req.customId || `RF-${String(index + 1).padStart(2, '0')}`}
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">
+                      {req.name || 'Sem nome'}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-450 whitespace-pre-wrap leading-relaxed">
+                      {req.description || 'Sem descrição'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Components Grid Section */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="border-b border-slate-100 pb-4 dark:border-slate-800 mb-6">
@@ -301,58 +346,30 @@ export default function ScreenReadOnlyView({ screen, onBack, onComponentStatusTo
             <table className="w-full min-w-[900px] border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
               <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                 <tr>
-                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[55%]">CRITÉRIO</th>
-                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">STATUS</th>
-                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[15%]">RESPONSÁVEL</th>
-                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-left w-[15%]">EVIDÊNCIA</th>
+                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Cenário</th>
+                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Dado que</th>
+                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Quando</th>
+                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Então</th>
+                  <th className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 w-[20%]">Rastreabilidade</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-850 bg-white dark:bg-slate-900">
                 {screen.criteria.map((criterion, index) => (
                   <tr key={criterion.id || index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-350 break-words whitespace-pre-wrap">
-                      {criterion.criterion || '-'}
+                    <td className="px-4 py-3 text-slate-750 dark:text-slate-200 break-words whitespace-pre-wrap font-semibold leading-relaxed">
+                      {criterion.scenario || '-'}
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border ${
-                        criterion.status === 'Concluído'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-955/20 dark:text-emerald-400 dark:border-emerald-800/40'
-                          : criterion.status === 'Em Desenvolvimento'
-                          ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-955/20 dark:text-blue-400 dark:border-blue-800/40'
-                          : criterion.status === 'Bloqueado'
-                          ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-955/20 dark:text-rose-400 dark:border-rose-800/40'
-                          : 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-955/20 dark:text-slate-400 dark:border-slate-800/40'
-                      }`}>
-                        {criterion.status || 'Pendente'}
-                      </span>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-350 break-words whitespace-pre-wrap leading-relaxed">
+                      {criterion.given || '-'}
                     </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-350">
-                      {criterion.responsible || '-'}
+                    <td className="px-4 py-3 text-slate-650 dark:text-slate-350 break-words whitespace-pre-wrap leading-relaxed">
+                      {criterion.when || '-'}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-start">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (criterion.evidence && criterion.evidence.trim()) {
-                              setActiveCriterionIndex(index);
-                              setIsEvidenceModalOpen(true);
-                            }
-                          }}
-                          disabled={!criterion.evidence || !criterion.evidence.trim()}
-                          className={`p-1.5 rounded-lg transition-all active:scale-90 ${
-                            criterion.evidence && criterion.evidence.trim()
-                              ? "text-indigo-655 hover:bg-indigo-50 hover:text-indigo-750 dark:text-indigo-400 dark:hover:bg-indigo-950/40 cursor-pointer"
-                              : "text-slate-300 dark:text-slate-750 cursor-not-allowed"
-                          }`}
-                          title="Visualizar Evidência"
-                        >
-                          <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        </button>
-                      </div>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-350 break-words whitespace-pre-wrap leading-relaxed">
+                      {criterion.then || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 break-words whitespace-pre-wrap font-mono text-xs">
+                      {criterion.traceability || '-'}
                     </td>
                   </tr>
                 ))}
@@ -648,26 +665,6 @@ export default function ScreenReadOnlyView({ screen, onBack, onComponentStatusTo
           </div>
         </div>
       )}
-      {/* Evidence Modal for Screen Criteria */}
-      <EvidenceModal
-        isOpen={isEvidenceModalOpen}
-        onClose={() => {
-          setIsEvidenceModalOpen(false);
-          setActiveCriterionIndex(null);
-        }}
-        onSave={() => {}}
-        evidence={
-          activeCriterionIndex !== null && screen && screen.criteria && screen.criteria[activeCriterionIndex]
-            ? screen.criteria[activeCriterionIndex].evidence
-            : ''
-        }
-        criterionId={
-          activeCriterionIndex !== null && screen && screen.criteria && screen.criteria[activeCriterionIndex]
-            ? screen.criteria[activeCriterionIndex].customId
-            : ''
-        }
-        mode="view"
-      />
     </div>
   );
 }

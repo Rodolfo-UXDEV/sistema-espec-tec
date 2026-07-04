@@ -16,6 +16,7 @@ export default function ScreenViewer({
   specCriteria = [],
   specFigmaUrl,
   specBusinessRules = [],
+  specFunctionalRequirements = [],
   onSelectScreen,
   onBack,
 }) {
@@ -24,12 +25,14 @@ export default function ScreenViewer({
   const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false);
   const [activeCriterionIndex, setActiveCriterionIndex] = useState(null);
   const [isBusinessRulesExpanded, setIsBusinessRulesExpanded] = useState(false);
+  const [isFunctionalRequirementsExpanded, setIsFunctionalRequirementsExpanded] = useState(false);
 
   // Reset modal and collapse states when the selected specification changes
   useEffect(() => {
     setSelectedComponent(null);
     setIsViewModalOpen(false);
     setIsBusinessRulesExpanded(false);
+    setIsFunctionalRequirementsExpanded(false);
   }, [selectedScreenId]);
 
   const handleComponentClick = (screenObj) => {
@@ -245,6 +248,70 @@ export default function ScreenViewer({
             </div>
           )}
 
+          {/* Functional Requirements Display */}
+          {specFunctionalRequirements && specFunctionalRequirements.length > 0 && (
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setIsFunctionalRequirementsExpanded(!isFunctionalRequirementsExpanded)}
+                className="flex w-full items-center justify-between p-4 hover:bg-slate-50 transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="h-6 w-1 rounded-full bg-indigo-500"></span>
+                  <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
+                    Requisitos Funcionais
+                  </h2>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-650 dark:bg-indigo-950/40 dark:text-indigo-400">
+                    {specFunctionalRequirements.length} {specFunctionalRequirements.length === 1 ? 'requisito' : 'requisitos'}
+                  </span>
+                  <svg
+                    className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${
+                      isFunctionalRequirementsExpanded ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+
+              {isFunctionalRequirementsExpanded && (
+                <div className="border-t border-slate-100 dark:border-slate-800 animate-in fade-in duration-200">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-left text-sm text-slate-500 dark:text-slate-400">
+                      <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        <tr>
+                          <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-[12%]">Nº Requisito</th>
+                          <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-[28%]">Nome do Requisito</th>
+                          <th className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-[60%]">Descrição do Requisito</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
+                        {specFunctionalRequirements.map((req, index) => (
+                          <tr key={req.id || index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                            <td className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-300">
+                              {req.customId || `RF-${String(index + 1).padStart(2, '0')}`}
+                            </td>
+                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
+                              {req.name || 'Sem nome definido.'}
+                            </td>
+                            <td className="px-6 py-4 text-slate-650 dark:text-slate-305 whitespace-pre-wrap leading-relaxed">
+                              {req.description || 'Sem descrição inserida.'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Flow Gallery display */}
           {specFlows && specFlows.length > 0 && (
             <div className="space-y-4">
@@ -284,7 +351,7 @@ export default function ScreenViewer({
               <div className="flex items-center gap-2">
                 <span className="h-6 w-1 rounded-full bg-indigo-500"></span>
                 <h2 className="font-display text-xl font-bold text-slate-800 dark:text-white">
-                  Telas da Especificação
+                  Detalhamento das Telas
                 </h2>
               </div>
             </div>

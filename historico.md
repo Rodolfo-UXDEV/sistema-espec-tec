@@ -761,6 +761,95 @@ Este arquivo registra o progresso do desenvolvimento do **Sistema de Geração d
 
 ---
 
+### Sessão 60: Adição de Seção de Requisitos Funcionais (03/07/2026)
+- **Objetivo**: Adicionar a seção de "Requisitos Funcionais" na edição de especificações do Analista, sincronizada com o Supabase e incluída na visualização do Desenvolvedor e exportação para PDF.
+- **Entregas**:
+  - Execução de alteração DDL no Supabase para incluir a coluna `functional_requirements` (tipo `text`) na tabela `public.screens`.
+  - Criação do componente isolado [FunctionalRequirementsSection.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/FunctionalRequirementsSection.jsx) no padrão das Regras de Negócios (com identificador `RF-XX` automático).
+  - Integração do componente no formulário de especificações do Analista em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Atualização dos métodos `loadScreenData`, `executeSaveAllToSupabase` e `handleNewScreen` em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para salvar, carregar e inicializar os requisitos funcionais.
+  - Implementação da seção de Requisitos Funcionais na visualização somente leitura do Desenvolvedor em [ScreenViewer.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx).
+  - Inclusão da tabela de requisitos funcionais no gerador de template de exportação de PDF em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Verificação e compilação de build concluída com sucesso no Vite.
+  - Ajuste do cabeçalho da seção "Regras de Negócios" em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para exibir o contador dinâmico de regras cadastradas (ex: `X regras`), unificando a usabilidade com a nova seção de requisitos.
+  - Padronização de todas as seções principais no editor do Analista em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) e [FunctionalRequirementsSection.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/FunctionalRequirementsSection.jsx) para utilizar a tipografia `h2 font-display text-xl font-bold` e a mesma nomenclatura/estética, unificada com o bloco "Detalhamento das Telas".
+  - Renomeação do cabeçalho "Telas da Especificação" para "Detalhamento das Telas" em [ScreenViewer.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenViewer.jsx), padronizando a nomenclatura em ambos os perfis.
+
+---
+
+### Sessão 61: Vínculo de Requisitos Funcionais à Tela (03/07/2026)
+- **Objetivo**: Permitir ao Analista associar múltiplos Requisitos Funcionais globais a telas específicas de forma somente leitura, exibindo-os nos perfis de Analista e Desenvolvedor e na exportação do PDF.
+- **Entregas**:
+  - Implementação da seção "Requisitos Funcionais da Tela" em [ScreenEditor.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx), exibindo uma tabela com os requisitos vinculados à tela e ação de desvincular.
+  - Criação de uma modal de vínculo contendo caixas de seleção (checkboxes) para associar múltiplos requisitos globais inseridos anteriormente.
+  - Sincronização do estado em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para carregar e salvar a chave `functionalRequirements` serializada no JSON das telas em `public.components`.
+  - Exibição de seção idêntica somente leitura em [ScreenReadOnlyView.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx) para o Desenvolvedor.
+  - Inclusão dos Requisitos Funcionais da Tela na geração de PDF em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+
+---
+
+### Sessão 62: Inclusão de Fluxo de Tela (03/07/2026)
+- **Objetivo**: Adicionar a seção de "Fluxo de Tela" (galeria de imagens de fluxo específicas da tela) abaixo do mockup principal no editor de tela do Analista, sincronizada com o banco de dados e exibida no perfil do Desenvolvedor e no PDF.
+- **Entregas**:
+  - Reutilização do componente [FlowsGallery.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/FlowsGallery.jsx) sob a propriedade `flows` da tela em [ScreenEditor.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx).
+  - Adição da seção "Fluxo de Tela" com cabeçalho `h2` padrão no editor de telas do Analista.
+  - Implementação da seção em modo leitura (`readOnly={true}`) em [ScreenReadOnlyView.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx) para o Desenvolvedor.
+  - Ajustes em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) nos métodos `loadScreenData`, `handleSaveScreen` e `executeSaveAllToSupabase` para sincronizar a propriedade `flows` na coluna `description` da tabela `public.components`.
+  - Inclusão da galeria de imagens do fluxo de cada tela na exportação do PDF.
+
+---
+
+### Sessão 63: Adequação de Critérios de Aceite para BDD/Gherkin (03/07/2026)
+- **Objetivo**: Reestruturar a tabela de "Critérios de Aceite da Tela" no editor de telas do Analista e no visualizador do Desenvolvedor para utilizar colunas estruturadas no padrão BDD/Gherkin: Cenário, Dado que, Quando, Então e Rastreabilidade.
+- **Entregas**:
+  - Ajuste de `handleAddCriterion` e `handleUpdateCriterion` em [ScreenEditor.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx) para suportar as propriedades `scenario`, `given`, `when`, `then` e `traceability`.
+  - Reestruturação das colunas e inputs da tabela de critérios no editor do Analista para edição individual dos cinco campos em caixas textarea auto-expansíveis.
+  - Ajuste do layout de exibição da tabela de critérios em [ScreenReadOnlyView.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenReadOnlyView.jsx) (perfil Desenvolvedor) para renderizar a estrutura BDD de forma limpa e com quebras de linha automáticas.
+  - Remoção de importações, modais, botões e controladores de upload/visualização de evidências e status no escopo de critérios de tela (mantidos no escopo global de especificações).
+  - Resolução do erro de renderização ("tela branca") ao remover uma referência legada e inativa do componente `<EvidenceModal />` no corpo de [ScreenEditor.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/ScreenEditor.jsx) que causava ReferenceError em runtime.
+
+---
+
+### Sessão 64: Auditoria e Validação de Persistência Supabase (03/07/2026)
+- **Objetivo**: Auditar todo o fluxo de persistência de dados no banco do Supabase para garantir o salvamento íntegro de todas as informações inseridas na interface.
+- **Entregas**:
+  - Consulta física do DDL e colunas das tabelas `screens`, `components`, `component_fields` e `component_services` via SQL no Supabase.
+  - Verificação e alinhamento detalhado entre as chaves dos payloads do editor do Analista (`criteria`, `flows`, `functionalRequirements`), os métodos de gravação (`handleSaveScreen`, `executeSaveAllToSupabase`) e as rotinas de leitura de dados (`loadScreenData`).
+  - Constatação de que 100% dos dados (títulos, descrições, imagens, miniaturas de fluxo, tabelas BDD de critérios de aceite, vínculos de requisitos, campos de componentes e especificações de serviços) estão mapeados, carregados e persistidos corretamente no banco de dados.
+
+---
+
+### Sessão 65: Gestão e Agrupamento de Projetos (03/07/2026)
+- **Objetivo**: Permitir a criação de projetos e a associação de uma ou mais especificações técnicas a esses projetos, dividindo-os visualmente em seções estruturadas (Projetos vs. Especificações Avulsas) na tela de listagem geral.
+- **Entregas**:
+  - Execução de comandos SQL no Supabase para criar a tabela `public.projects` e adicionar a coluna `project_id` em `public.screens` (tabela de especificações).
+  - Implementação dos estados `projectsList`, `specProjectId` e métodos `fetchProjectsList()`, `handleNewProject()` em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx).
+  - Atualização dos métodos de salvamento e leitura em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) para ler, registrar e reassociar o campo `project_id` de forma íntegra.
+  - Inclusão do dropdown de seleção de projeto no grid de metadados da tela de edição da especificação (permitindo trocar o projeto a qualquer momento).
+  - Reengenharia completa do componente [SpecificationList.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/components/SpecificationList.jsx) para exibir as especificações agrupadas sob cards colapsáveis de projetos com botões rápidos de inserção e manter a seção de especificações avulsas logo abaixo.
+  - Criação de modais de inserção para Projetos e Especificações.
+
+---
+
+### Sessão 66: Formato de Abas e Ajuste do Título da Listagem (03/07/2026)
+- **Objetivo**: Renomear a tela principal de listagem para "Lista de Projetos/Especificações" e organizar a visualização de projetos e especificações avulsas sob abas separadas e dinâmicas.
+- **Entregas**:
+  - Ajuste do título da tela de listagem para "Lista de Projetos/Especificações" no cabeçalho do componente.
+  - Implementação do estado `activeListTab` para chavear entre a aba `'projects'` (Projetos) e a aba `'standalone'` (Especificações Avulsas).
+  - Criação de um seletor visual de abas com design premium no ecossistema Tailwind, incluindo indicadores de seleção ativos e badges dinâmicos com a contagem total de itens em cada aba (total de projetos e total de especificações avulsas).
+  - Condicionamento da renderização de conteúdo para carregar apenas a aba ativa, otimizando o espaço da tela.
+
+---
+
+### Sessão 67: Associação e Vínculo de Especificações Existentes (03/07/2026)
+- **Objetivo**: Habilitar a associação de especificações originalmente criadas como avulsas a projetos existentes, seja por lote (dentro do projeto) ou individualmente (pela especificação avulsa).
+- **Entregas**:
+  - Implementação do método `handleAssociateSpecsToProject(projectId, specIds)` em [App.jsx](file:///Users/rodolforodrigues/.gemini/antigravity-ide/scratch/sistema-espec-tec/src/App.jsx) que executa o `UPDATE` no Supabase e atualiza o estado local.
+  - Inclusão do botão de ação rápida "Vincular Espec" no cabeçalho de cada projeto (aba Projetos), abrindo um modal de associação em lote com checkboxes de especificações avulsas ativas.
+  - Inclusão do botão "Vincular a Projeto / Mover" nas linhas das tabelas de especificações (aba Especificações Avulsas), abrindo um modal de associação individual com dropdown contendo todos os projetos ativos (incluindo a opção de desvincular).
+
+---
+
 ## Próximos Passos
 1. **Ativar RLS (Row Level Security)**: Conversar com o usuário sobre a ativação do RLS nas tabelas do Supabase para garantir a segurança dos dados em produção.
 2. **Exportação de Especificações**: Implementar exportação para formato Markdown (PDF concluído na Sessão 30).
